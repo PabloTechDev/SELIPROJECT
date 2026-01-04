@@ -20,12 +20,16 @@ Diferente de plataformas tradicionais que "adaptam" o conteúdo depois, a SELI f
 Abaixo, algumas demonstrações da interface focada em UX e Acessibilidade:
 
 ### 🏠 Tela Inicial (Landing Page)
-![Screenshot da Tela Inicial](assets/nome-da-sua-imagem-home.png)
+![Screenshot da Tela Inicial](initialpageacessibilityprint.png)
 *Design limpo com alto contraste e navegação simplificada.*
 
-### 📚 Área de Estudo
+### 📚 Área de Estudo(Mentor)
 ![Screenshot da Área de Curso](/didacticcontentprint.png)
 *Interface focada no conteúdo, sem distrações visuais.*
+
+### 📚 Área de Estudo(Mentor)
+![Screenshot da Área de Curso](/didacticcontentteacheronlyprint.png)
+*Interface focada em organização e edição livre centrada para os professores/mentores*
 
 ---
 
