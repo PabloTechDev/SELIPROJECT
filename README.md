@@ -7,7 +7,7 @@
 
 ---
 
-## 💻 Sobre o Projeto
+## Sobre o Projeto
 
 A **SELI** nasceu da união de dois mundos: a precisão da logística e a necessidade urgente de inclusão social. Somos uma plataforma EAD (Ensino a Distância) projetada para oferecer cursos de alta qualidade na área de logística, **nativamente adaptada para Pessoas com Deficiência (PCDs)**.
 
@@ -15,19 +15,19 @@ Diferente de plataformas tradicionais que "adaptam" o conteúdo depois, a SELI f
 
 ---
 
-## 🎨 Layout e Telas
+## Layout e Telas
 
 Abaixo, algumas demonstrações da interface focada em UX e Acessibilidade:
 
-### 🏠 Tela Inicial (Landing Page)
+### Tela Inicial (Landing Page)
 ![Screenshot da Tela Inicial](initialpageacessibilityprint.png)
 *Design limpo com alto contraste e navegação simplificada.*
 
-### 📚 Área de Estudo(Mentor)
+### Área de Estudo(Mentor)
 ![Screenshot da Área de Curso](/didacticcontentprint.png)
 *Interface focada no conteúdo, sem distrações visuais.*
 
-### 📚 Área de Estudo(Mentor)
+### Área de Estudo(Mentor)
 ![Screenshot da Área de Curso](/didacticcontentteacheronlyprint.png)
 *Interface focada em organização e edição livre centrada para os professores/mentores*
 
