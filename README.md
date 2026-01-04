@@ -24,7 +24,7 @@ Abaixo, algumas demonstrações da interface focada em UX e Acessibilidade:
 *Design limpo com alto contraste e navegação simplificada.*
 
 ### 📚 Área de Estudo
-![Screenshot da Área de Curso](didactic-content)
+![Screenshot da Área de Curso](/Didactic-content.mp4)
 *Interface focada no conteúdo, sem distrações visuais.*
 
 ---
