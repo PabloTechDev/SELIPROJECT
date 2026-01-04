@@ -23,7 +23,7 @@ Abaixo, algumas demonstrações da interface focada em UX e Acessibilidade:
 ![Screenshot da Tela Inicial](initialpageacessibilityprint.png)
 *Design limpo com alto contraste e navegação simplificada.*
 
-### Área de Estudo(Mentor)
+### Área de Estudo(Aluno)
 ![Screenshot da Área de Curso](/didacticcontentprint.png)
 *Interface focada no conteúdo, sem distrações visuais.*
 
