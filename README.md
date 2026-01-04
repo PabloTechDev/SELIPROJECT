@@ -58,7 +58,7 @@ O projeto foi desenvolvido focando em performance, compatibilidade e, acima de t
 
 Você pode acessar a versão online do projeto através do link abaixo:
 
-🔗 **[Acessar Projeto SELI](https://pablouweb.github.io/SELIPROJECT/inicio.html)**
+🔗 **[Acessar Projeto SELI](https://pablotechdev.github.io/SELIPROJECT/inicio.html)**
 
 ---
 
