@@ -1,0 +1,173 @@
+/* === ACESSIBILIDADE.CSS === */
+
+/* Variáveis de apoio (caso a página não tenha) */
+:root {
+  --accent-color: #007bff;
+  --border-color: #333;
+  --surface-color: #1e1e1e;
+  --text-color: #e0e0e0;
+}
+
+/* === TEMAS === */
+
+/* 1. Modo Claro */
+body.light-mode {
+  --bg-color: #f4f4f4 !important;
+  --surface-color: #ffffff !important;
+  --primary-text-color: #222222 !important;
+  --secondary-text-color: #555555 !important;
+  --border-color: #cccccc !important;
+  color: #222 !important;
+  background-color: #f4f4f4 !important;
+}
+/* Força fundo branco se houver imagem no hero */
+body.light-mode #hero {
+  background: linear-gradient(
+      rgba(255, 255, 255, 0.9),
+      rgba(255, 255, 255, 0.9)
+    ),
+    url("https://images.unsplash.com/photo-1517486808906-6538cb3ea698?auto=format&fit=crop&q=80&w=2070")
+      no-repeat center center/cover !important;
+}
+
+/* 2. Alto Contraste */
+body.high-contrast-mode {
+  --bg-color: #000000 !important;
+  --surface-color: #000000 !important;
+  --primary-text-color: #ffff00 !important;
+  --secondary-text-color: #ffffff !important;
+  --accent-color: #ffff00 !important;
+  --accent-hover-color: #ffd700 !important;
+  --border-color: #ffff00 !important;
+  background-color: #000 !important;
+  color: #ffff00 !important;
+}
+body.high-contrast-mode .btn,
+body.high-contrast-mode button {
+  background-color: #000 !important;
+  color: #ffff00 !important;
+  border: 2px solid #ffff00 !important;
+}
+body.high-contrast-mode img {
+  filter: grayscale(100%) contrast(120%);
+}
+
+/* 3. Daltonismo */
+body.color-blind-mode {
+  filter: contrast(120%) saturate(110%);
+}
+
+/* === CORREÇÃO NO ARQUIVO ACESSIBILIDADE.CSS === */
+
+/* 4. Modo Foco (Container) - CORRIGIDO */
+
+/* Passo A: Define a transição suave para todos os elementos principais */
+body.focus-mode > *:not(.accessibility-fab):not([vw]) {
+  transition: all 0.4s ease;
+}
+
+/* Passo B: Se o mouse estiver em QUALQUER lugar da página, TUDO fica desfocado por padrão */
+body.focus-mode:hover > *:not(.accessibility-fab):not([vw]) {
+  filter: blur(6px) grayscale(80%);
+  opacity: 0.3;
+}
+
+/* Passo C: EXCEÇÃO - O elemento específico que o mouse está em cima fica NÍTIDO */
+body.focus-mode > *:not(.accessibility-fab):not([vw]):hover {
+  filter: none !important; /* Remove o blur */
+  opacity: 1 !important; /* Restaura opacidade */
+  transform: scale(1.02); /* Traz levemente para frente */
+  z-index: 999; /* Garante que fique por cima dos outros */
+  box-shadow: 0 0 100vh rgba(0, 0, 0, 0.85); /* Escurece drasticamente o resto */
+  background-color: var(
+    --surface-color,
+    #1e1e1e
+  ); /* Garante contraste de leitura */
+  border-radius: 8px; /* Estética */
+}
+
+/* 5. Magnetismo */
+.magnetic-active {
+  transition: transform 0.1s ease-out;
+  will-change: transform;
+  z-index: 9999;
+}
+
+/* === BOTÃO FLUTUANTE (FAB) === */
+.accessibility-fab {
+  position: fixed;
+  bottom: 30px;
+  right: 30px;
+  z-index: 10000;
+  font-family: sans-serif;
+}
+
+.fab-button {
+  width: 60px;
+  height: 60px;
+  border-radius: 50%;
+  background-color: #007bff;
+  color: white;
+  border: none;
+  font-size: 1.8rem;
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  cursor: pointer;
+  box-shadow: 0 4px 15px rgba(0, 0, 0, 0.4);
+  transition: 0.3s;
+}
+.fab-button:hover {
+  transform: scale(1.1);
+  background-color: #0056b3;
+}
+
+.fab-menu {
+  position: absolute;
+  bottom: 75px;
+  right: 0;
+  background-color: #1e1e1e;
+  border: 1px solid #333;
+  border-radius: 8px;
+  width: 260px;
+  list-style: none;
+  padding: 10px 0;
+  opacity: 0;
+  visibility: hidden;
+  transform: translateY(10px);
+  transition: 0.3s;
+  box-shadow: 0 10px 30px rgba(0, 0, 0, 0.5);
+}
+.accessibility-fab.active .fab-menu {
+  opacity: 1;
+  visibility: visible;
+  transform: translateY(0);
+}
+
+.fab-menu li button {
+  display: flex;
+  align-items: center;
+  width: 100%;
+  padding: 12px 20px;
+  border: none;
+  background: none;
+  color: #e0e0e0;
+  cursor: pointer;
+  font-size: 0.95rem;
+  text-align: left;
+  transition: 0.2s;
+}
+.fab-menu li button:hover {
+  background-color: rgba(255, 255, 255, 0.1);
+  color: #007bff;
+}
+.fab-menu li button i {
+  margin-right: 12px;
+  width: 20px;
+  text-align: center;
+}
+.fab-menu hr {
+  border: 0;
+  border-top: 1px solid #333;
+  margin: 5px 0;
+}

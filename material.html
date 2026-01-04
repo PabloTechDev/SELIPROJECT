@@ -1,0 +1,161 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Material - SELI</title>
+  <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@300;400;600;700&display=swap" rel="stylesheet">
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.2/css/all.min.css">
+  <script src="https://www.gstatic.com/firebasejs/9.23.0/firebase-app-compat.js"></script>
+  <script src="https://www.gstatic.com/firebasejs/9.23.0/firebase-auth-compat.js"></script>
+  <script src="https://www.gstatic.com/firebasejs/9.23.0/firebase-database-compat.js"></script>
+  <script src="https://www.gstatic.com/firebasejs/9.23.0/firebase-storage-compat.js"></script>
+
+  <!-- Acessibilidades -->
+  <link rel="stylesheet" href="acessibilidade.css">
+  <script src="acessibilidade.js"></script>
+
+  <style>
+    body {
+      font-family: 'Poppins', sans-serif;
+      background: #121212;
+      color: #E0E0E0;
+      padding-top: 100px;
+    }
+
+    .container {
+      width: 90%;
+      max-width: 1000px;
+      margin: 0 auto;
+      padding: 40px;
+      background: #1e1e1e;
+      border-radius: 12px;
+    }
+
+    h1 {
+      font-size: 2.5rem;
+      margin-bottom: 20px;
+    }
+
+    .author {
+      color: #007BFF;
+      margin-bottom: 30px;
+    }
+
+    .content {
+      line-height: 1.8;
+      font-size: 1.1rem;
+      white-space: pre-wrap;
+    }
+
+    .download {
+      display: inline-block;
+      margin: 30px 0;
+      padding: 12px 30px;
+      background: #007BFF;
+      color: white;
+      text-decoration: none;
+      border-radius: none;
+      border-radius: 6px;
+    }
+
+    .back {
+      color: #007BFF;
+      text-decoration: none;
+    }
+  </style>
+</head>
+
+<body>
+  <div class="container">
+    <a href="materiais.html" class="back"><i class="fas fa-arrow-left"></i> Voltar aos materiais</a>
+    <h1 id="title">Carregando...</h1>
+    <p class="author">Por: <span id="author"></span></p>
+    <div class="content" id="content">Carregando...</div>
+    <a id="download-link" class="download" style="display:none;"><i class="fas fa-download"></i> Baixar arquivo anexo</a>
+  </div>
+
+  <div vw class="enabled">
+    <div vw-access-button class="active"></div>
+    <div vw-plugin-wrapper>
+      <div class="vw-plugin-top-wrapper"></div>
+    </div>
+  </div>
+  <script src="https://vlibras.gov.br/app/vlibras-plugin.js"></script>
+  <script>
+
+    new window.VLibras.Widget('https://vlibras.gov.br/app');
+    // 1. Configuração do Firebase (copiada do seu projeto)
+    const firebaseConfig = {
+      apiKey: "AIzaSyAErlpmobBTnLhS3ZPYZKtXS8G1I9xsvQM",
+      authDomain: "seli-logistica.firebaseapp.com",
+      databaseURL: "https://seli-logistica-default-rtdb.firebaseio.com",
+      projectId: "seli-logistica",
+      storageBucket: "seli-logistica.firebasestorage.app",
+      messagingSenderId: "726944272672",
+      appId: "1:726944272672:web:3eb39e001495a923f2c745"
+    };
+
+    firebase.initializeApp(firebaseConfig);
+    const auth = firebase.auth();
+    const db = firebase.database();
+
+    // 2. Fluxo de Autenticação
+    auth.onAuthStateChanged(user => {
+      if (!user) {
+        // Se não estiver logado, redireciona para a tela de login
+        return location.href = 'index.html';
+      }
+
+      // Se estiver logado, carrega o material
+      loadMaterial();
+    });
+
+    // 3. Função para Carregar o Material
+    function loadMaterial() {
+      const urlParams = new URLSearchParams(location.search);
+      const id = urlParams.get('id');
+
+      if (!id) {
+        document.getElementById('title').textContent = "Erro: Material não especificado.";
+        document.getElementById('content').textContent = "Volte à página de materiais e tente novamente.";
+        return;
+      }
+
+      db.ref('materials/' + id).once('value').then(snap => {
+        const mat = snap.val();
+
+        const titleEl = document.getElementById('title');
+        const contentEl = document.getElementById('content');
+
+        if (!mat) {
+          titleEl.textContent = "Material não encontrado";
+          contentEl.innerHTML = "O material que você está tentando acessar pode ter sido excluído ou o ID está incorreto.";
+          return;
+        }
+
+        document.title = mat.title + ' - SELI';
+        titleEl.textContent = mat.title;
+        document.getElementById('author').textContent = mat.author;
+
+        // Usamos innerHTML e substituímos quebras de linha por <br> para formatação
+        contentEl.innerHTML = mat.content ? mat.content.replace(/\n/g, '<br>') : 'Conteúdo principal vazio.';
+
+        if (mat.fileUrl) {
+          const downloadLink = document.getElementById('download-link');
+          downloadLink.href = mat.fileUrl;
+          downloadLink.style.display = 'block';
+        }
+
+      }).catch(error => {
+        // Em caso de erro de leitura (ex: PERMISSION_DENIED), exibe feedback
+        document.getElementById('title').textContent = "Erro ao carregar";
+        document.getElementById('content').innerHTML = `Não foi possível carregar o material. Verifique a conexão ou as regras do Firebase. (Erro: ${error.message})`;
+        console.error("Firebase Load Error:", error);
+      });
+    }
+  </script>
+</body>
+
+</html>

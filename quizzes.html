@@ -1,0 +1,1246 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>Quizzes - SELI</title>
+
+    <link rel="preconnect" href="https://fonts.googleapis.com" />
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+    <link
+      href="https://fonts.googleapis.com/css2?family=Poppins:wght@300;400;600;700&display=swap"
+      rel="stylesheet"
+    />
+    <link
+      rel="stylesheet"
+      href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.2/css/all.min.css"
+    />
+
+    <link rel="stylesheet" href="accessibility.css" />
+
+    <script src="https://www.gstatic.com/firebasejs/9.23.0/firebase-app-compat.js"></script>
+    <script src="https://www.gstatic.com/firebasejs/9.23.0/firebase-auth-compat.js"></script>
+    <script src="https://www.gstatic.com/firebasejs/9.23.0/firebase-database-compat.js"></script>
+
+    <!-- Acessibilidades -->
+    <link rel="stylesheet" href="acessibilidade.css">
+    <script src="acessibilidade.js"></script>
+
+    <style>
+      :root {
+        --bg-color: #121212;
+        --surface-color: #1e1e1e;
+        --primary-text-color: #e0e0e0;
+        --secondary-text-color: #a0a0a0;
+        --accent-color: #007bff;
+        --accent-hover-color: #0056b3;
+        --border-color: #333333;
+        --delete-color: #dc3545;
+        --correct-color: #28a745;
+      }
+
+      * {
+        margin: 0;
+        padding: 0;
+        box-sizing: border-box;
+      }
+
+      body {
+        font-family: "Poppins", sans-serif;
+        background: var(--bg-color);
+        color: var(--primary-text-color);
+        line-height: 1.6;
+      }
+
+      .container {
+        width: 90%;
+        max-width: 1200px;
+        margin: 0 auto;
+      }
+
+      /* Header e Nav */
+      .header {
+        position: fixed;
+        top: 0;
+        left: 0;
+        width: 100%;
+        padding: 15px 0;
+        background: rgba(30, 30, 30, 0.9);
+        backdrop-filter: blur(10px);
+        z-index: 1000;
+      }
+
+      .navbar {
+        display: flex;
+        justify-content: space-between;
+        align-items: center;
+      }
+
+      .logo {
+        font-size: 1.8rem;
+        font-weight: 700;
+        color: #fff;
+        text-decoration: none;
+      }
+
+      .logo i {
+        color: var(--accent-color);
+        margin-right: 8px;
+      }
+
+      .nav-links {
+        display: flex;
+        gap: 35px;
+        list-style: none;
+        align-items: center;
+      }
+
+      .nav-links a {
+        color: var(--primary-text-color);
+        text-decoration: none;
+        transition: 0.3s;
+      }
+
+      .nav-links a:hover {
+        color: var(--accent-color);
+      }
+
+      /* Dropdown */
+      .dropdown {
+        position: relative;
+      }
+
+      .dropdown-menu {
+        display: none;
+        position: absolute;
+        top: 100%;
+        left: 0;
+        background: var(--surface-color);
+        min-width: 200px;
+        border: 1px solid var(--border-color);
+        border-radius: 5px;
+        list-style: none;
+      }
+
+      .dropdown:hover .dropdown-menu {
+        display: block;
+      }
+
+      .dropdown-menu a {
+        display: block;
+        padding: 12px 20px;
+      }
+
+      .dropdown-menu a:hover {
+        background: var(--border-color);
+        color: var(--accent-color);
+      }
+
+      .btn {
+        padding: 10px 24px;
+        background: var(--accent-color);
+        color: #fff;
+        border-radius: 5px;
+        text-decoration: none;
+        font-weight: 600;
+        border: none;
+        cursor: pointer;
+        transition: 0.3s;
+      }
+
+      .btn:hover {
+        background: var(--accent-hover-color);
+      }
+
+      .btn-secondary {
+        background: transparent;
+        padding: 20px;
+        border: 2px solid var(--accent-color);
+        color: white;
+      }
+
+      /* Hero e Seções */
+      .page-hero {
+        padding: 180px 0 80px;
+        text-align: center;
+      }
+
+      .page-hero h1 {
+        font-size: 3rem;
+        margin-bottom: 20px;
+        color: #fff;
+      }
+
+      .level-section {
+        padding: 60px 0;
+        border-bottom: 1px solid var(--border-color);
+      }
+
+      .level-title {
+        font-size: 2.2rem;
+        margin-bottom: 40px;
+        border-left: 5px solid var(--accent-color);
+        padding-left: 15px;
+        color: #fff;
+      }
+
+      /* Grid de Cards */
+      .material-grid {
+        display: grid;
+        grid-template-columns: repeat(auto-fit, minmax(320px, 1fr));
+        gap: 30px;
+      }
+
+      /* --- CORREÇÃO DO CARD E DESCRIÇÃO --- */
+
+      .material-card {
+        background: var(--surface-color);
+        border-radius: 10px;
+        padding: 20px;
+        /* Garante espaço para os botões de admin não ficarem em cima do texto */
+        padding-right: 40px;
+        cursor: pointer;
+        border: 1px solid var(--border-color);
+        transition: transform 0.3s, box-shadow 0.3s;
+        position: relative;
+        /* Flexbox para alinhar altura se necessário */
+        display: flex;
+        flex-direction: column;
+        justify-content: space-between;
+        min-height: 200px; /* Altura mínima para padronizar */
+      }
+
+      .material-preview {
+        font-size: 0.95rem;
+        color: var(--secondary-text-color);
+        margin-bottom: 10px;
+
+        /* MÁGICA PARA LIMITAR A 3 LINHAS */
+        display: -webkit-box;
+        line-clamp: 3; /* Número de linhas */
+        -webkit-box-orient: vertical;
+        overflow: hidden;
+        text-overflow: ellipsis;
+
+        /* MÁGICA PARA QUEBRAR PALAVRAS GIGANTES (wqqqq...) */
+        word-break: break-word;
+        overflow-wrap: anywhere;
+
+        /* Altura fixa baseada na fonte (opcional, ajuda na uniformidade) */
+        min-height: 4.2em;
+      }
+
+      /* Botãozinho discreto de "Ver mais" */
+      .read-more-btn {
+        font-size: 0.8rem;
+        color: var(--accent-color);
+        background: none;
+        border: none;
+        cursor: pointer;
+        text-decoration: underline;
+        align-self: flex-start;
+        padding: 0;
+        margin-top: 5px;
+        display: none; /* Escondido por padrão, JS vai mostrar se precisar */
+      }
+      .read-more-btn:hover {
+        color: #fff;
+      }
+
+      .card-meta {
+        font-size: 0.8rem;
+        color: var(--accent-color);
+        display: flex;
+        align-items: center;
+        gap: 10px;
+      }
+
+      .delete-btn {
+        position: absolute;
+        top: 12px;
+        right: 12px;
+        color: var(--delete-color);
+        font-size: 1.3rem;
+        cursor: pointer;
+        z-index: 10;
+      }
+
+      /* Card Adicionar */
+      .add-card {
+        background: var(--surface-color);
+        border: 2px dashed var(--accent-color);
+        color: var(--accent-color);
+        display: flex;
+        flex-direction: column;
+        align-items: center;
+        justify-content: center;
+        text-align: center;
+      }
+
+      .add-card:hover {
+        background: var(--accent-color);
+        color: #fff;
+      }
+
+      .add-card i {
+        font-size: 4rem;
+        margin-bottom: 10px;
+      }
+
+      /* --- MODAIS --- */
+      .modal {
+        display: none;
+        position: fixed;
+        inset: 0;
+        background: rgba(0, 0, 0, 0.8);
+        justify-content: center;
+        align-items: center;
+        z-index: 2000;
+      }
+
+      .modal.active {
+        display: flex;
+      }
+
+      /* Conteúdo do Modal Principal */
+      .modal-content {
+        background: var(--surface-color);
+        padding: 30px;
+        border-radius: 12px;
+        width: 90%;
+        max-width: 800px;
+        max-height: 85vh;
+        overflow-y: auto;
+        position: relative;
+        border: 1px solid var(--border-color);
+      }
+
+      .close-modal {
+        position: absolute;
+        top: 15px;
+        right: 20px;
+        font-size: 1.8rem;
+        cursor: pointer;
+        color: #aaa;
+        z-index: 5;
+      }
+
+      /* Ícone de Ajuda (Lâmpada) */
+      .help-icon {
+        position: absolute;
+        top: 15px;
+        right: 60px;
+        font-size: 1.5rem;
+        color: #ffc107;
+        cursor: pointer;
+        transition: transform 0.3s;
+      }
+
+      .help-icon:hover {
+        transform: scale(1.1);
+        text-shadow: 0 0 10px #ffc107;
+      }
+
+      /* Inputs do Modal */
+      input,
+      select,
+      textarea {
+        width: 100%;
+        padding: 12px;
+        margin: 8px 0;
+        background: #2a2a2a;
+        border: 1px solid #444;
+        border-radius: 6px;
+        color: white;
+        font-family: inherit;
+      }
+
+      /* --- ESTILOS DO CONSTRUTOR VISUAL --- */
+      .toggle-container {
+        display: flex;
+        justify-content: center;
+        margin: 20px 0;
+        gap: 10px;
+      }
+
+      .toggle-btn {
+        background: #333;
+        color: #aaa;
+        padding: 8px 16px;
+        border-radius: 20px;
+        cursor: pointer;
+        font-size: 0.9rem;
+        border: 1px solid #444;
+      }
+
+      .toggle-btn.active {
+        background: var(--accent-color);
+        color: white;
+        border-color: var(--accent-color);
+      }
+
+      .builder-section {
+        display: none;
+        margin-top: 10px;
+      }
+
+      .builder-section.active {
+        display: block;
+      }
+
+      /* Blocos de Pergunta */
+      .question-block {
+        background: #252525;
+        padding: 15px;
+        border-radius: 8px;
+        margin-bottom: 15px;
+        border: 1px solid #333;
+        position: relative;
+      }
+
+      .q-header {
+        display: flex;
+        justify-content: space-between;
+        align-items: center;
+        margin-bottom: 10px;
+      }
+
+      .q-number {
+        font-weight: bold;
+        color: var(--accent-color);
+      }
+
+      .btn-remove-q {
+        color: var(--delete-color);
+        cursor: pointer;
+        font-size: 0.9rem;
+      }
+
+      /* Lista de Opções */
+      .options-list {
+        margin-top: 10px;
+        padding-left: 10px;
+        border-left: 2px solid #444;
+      }
+
+      .option-row {
+        display: flex;
+        align-items: center;
+        gap: 10px;
+        margin-bottom: 5px;
+      }
+
+      .option-check {
+        width: 20px;
+        height: 20px;
+        cursor: pointer;
+        accent-color: var(--correct-color);
+      }
+
+      .option-input {
+        margin: 0;
+        padding: 8px;
+        flex-grow: 1;
+        font-size: 0.9rem;
+      }
+
+      .btn-remove-opt {
+        color: #666;
+        cursor: pointer;
+      }
+
+      .btn-remove-opt:hover {
+        color: var(--delete-color);
+      }
+
+      .btn-add-opt {
+        background: none;
+        border: 1px dashed #555;
+        color: #888;
+        padding: 5px 10px;
+        border-radius: 4px;
+        font-size: 0.8rem;
+        cursor: pointer;
+        margin-top: 5px;
+      }
+
+      .btn-add-opt:hover {
+        background: #333;
+        color: white;
+      }
+
+      /* Modal de Ajuda (Vídeo) */
+      .help-modal {
+        display: none;
+        position: fixed;
+        top: 50%;
+        left: 50%;
+        transform: translate(-50%, -50%);
+        background: #222;
+        padding: 20px;
+        border-radius: 10px;
+        z-index: 2100;
+        width: 90%;
+        max-width: 500px;
+        box-shadow: 0 0 20px rgba(0, 0, 0, 0.8);
+        border: 1px solid var(--accent-color);
+      }
+
+      .help-modal.active {
+        display: block;
+      }
+
+      .overlay-help {
+        display: none;
+        position: fixed;
+        inset: 0;
+        background: rgba(0, 0, 0, 0.5);
+        z-index: 2090;
+      }
+
+      .overlay-help.active {
+        display: block;
+      }
+
+      .fade-in {
+        opacity: 0;
+        transform: translateY(30px);
+        transition: opacity 0.6s, transform 0.6s;
+      }
+
+      .fade-in.visible {
+        opacity: 1;
+        transform: none;
+      }
+
+      .fas fa-lightbulb help-icon {
+        color: #252525;
+      }
+      /* === CONTROLES DO PROFESSOR (AJUSTADO) === */
+      .video-card,
+      .material-card {
+        position: relative;
+        /* Adiciona padding à direita para que o card não se sobreponha aos botões */
+        padding-right: 40px;
+      }
+
+      .admin-controls {
+        /* Manda o container dos botões para fora do card, na lateral direita */
+        position: absolute;
+        top: 50%; /* Centraliza verticalmente */
+        right: 10px; /* Distância da borda direita do card */
+        transform: translateY(-50%); /* Ajuste fino para o centro exato */
+
+        display: flex;
+        flex-direction: column; /* Coloca os botões um em cima do outro */
+        gap: 2px;
+        z-index: 20; /* Garante que fiquem acima de tudo */
+      }
+
+      .admin-btn {
+        /* Botões menores e mais discretos */
+        width: 28px;
+        height: 28px;
+        font-size: 0.8rem; /* Ícones menores */
+        border-radius: 50%;
+        border: none;
+        display: flex;
+        justify-content: center;
+        align-items: center;
+        cursor: pointer;
+        color: white;
+        transition: background-color 0.2s, opacity 0.2s;
+        box-shadow: 0 1px 3px rgba(0, 0, 0, 0.4);
+        opacity: 0.8; /* Levemente transparentes */
+      }
+
+      .admin-btn:hover {
+        transform: scale(1.05);
+        opacity: 1; /* Ficam mais visíveis ao passar o mouse */
+      }
+
+      .btn-delete {
+        background-color: var(--delete-color, #dc3545);
+      }
+      .btn-move {
+        background-color: var(--accent-color, #007bff);
+      }
+
+      /* Para cards que não são position: relative; (como em aulas.html) */
+      .video-card-inner {
+        position: relative;
+      }
+    </style>
+  </head>
+
+  <body>
+    <header class="header">
+      <nav class="navbar container">
+        <a href="inicio.html" class="logo"
+          ><i class="fa-solid fa-compass"></i> SELI</a
+        >
+        <ul class="nav-links">
+          <li><a href="inicio.html">Início</a></li>
+          <li class="dropdown">
+            <a>Estudo <i class="fas fa-caret-down"></i></a>
+            <ul class="dropdown-menu">
+              <li><a href="aulas.html">Vídeo-aulas</a></li>
+              <li><a href="materiais.html">Materiais Didáticos</a></li>
+              <li><a href="quizzes.html">Quizzes</a></li>
+            </ul>
+          </li>
+                <li><a href="Chatbot.html">SELIBot</a></li>
+          <li><a href="contato.html">Contato</a></li>
+          <li>
+            <a
+              href="#"
+              id="logout-btn"
+              class="btn btn-secondary"
+              style="display: none"
+              >Sair</a
+            >
+          </li>
+        </ul>
+      </nav>
+    </header>
+
+    <section class="page-hero">
+      <div class="container fade-in">
+        <h1>Quizzes Interativos</h1>
+        <p>
+          Teste seus conhecimentos em logística. Selecione um nível para
+          começar.
+        </p>
+      </div>
+    </section>
+
+    <section class="level-section">
+      <div class="container">
+        <h2 class="level-title fade-in">Básico</h2>
+        <div id="basico-grid" class="material-grid"></div>
+      </div>
+    </section>
+
+    <section class="level-section">
+      <div class="container">
+        <h2 class="level-title fade-in">Intermediário</h2>
+        <div id="intermediario-grid" class="material-grid"></div>
+      </div>
+    </section>
+
+    <section class="level-section">
+      <div class="container">
+        <h2 class="level-title fade-in">Avançado</h2>
+        <div id="avancado-grid" class="material-grid"></div>
+      </div>
+    </section>
+
+    <div id="add-modal" class="modal">
+      <div class="modal-content">
+        <span id="close-modal" class="close-modal">×</span>
+        <i
+          class="fas fa-lightbulb help-icon"
+          id="open-help"
+          title="Dica: Como usar IA"
+        ></i>
+
+        <h2 style="color: white; margin-bottom: 15px">Novo Quiz</h2>
+
+        <input
+          type="text"
+          id="quiz-title"
+          placeholder="Título do Quiz (Ex: Logística Reversa)"
+        />
+        <select id="quiz-level">
+          <option value="Básico">Básico</option>
+          <option value="Intermediário">Intermediário</option>
+          <option value="Avançado">Avançado</option>
+        </select>
+        <input type="text" id="quiz-desc" placeholder="Breve descrição" />
+
+        <hr style="border: 0; border-top: 1px solid #444; margin: 15px 0" />
+
+        <div class="toggle-container">
+          <div
+            class="toggle-btn active"
+            id="btn-mode-visual"
+            onclick="switchMode('visual')"
+          >
+            <i class="fas fa-list"></i> Modo Visual
+          </div>
+          <div
+            class="toggle-btn"
+            id="btn-mode-json"
+            onclick="switchMode('json')"
+          >
+            <i class="fas fa-code"></i> Modo JSON (IA)
+          </div>
+        </div>
+
+        <div id="visual-builder" class="builder-section active">
+          <div id="questions-container"></div>
+          <button
+            class="btn-secondary"
+            onclick="addVisualQuestion()"
+            style="width: 100%; margin-top: 10px; border-style: dashed"
+          >
+            <i class="fas fa-plus"></i> Adicionar Pergunta
+          </button>
+        </div>
+
+        <div id="json-builder" class="builder-section">
+          <p style="color: #aaa; font-size: 0.9rem; margin-bottom: 5px">
+            Cole aqui o código gerado pela IA:
+          </p>
+          <textarea
+            id="quiz-json"
+            rows="10"
+            placeholder="[ ... Cole o JSON aqui ... ]"
+          ></textarea>
+        </div>
+
+        <button
+          id="btn-salvar"
+          class="btn"
+          style="width: 100%; margin-top: 20px"
+        >
+          Salvar Quiz
+        </button>
+      </div>
+    </div>
+
+    <div class="overlay-help" id="overlay-help"></div>
+    <div class="help-modal" id="help-modal">
+      <h3 style="color: white; margin-bottom: 10px">Como criar com IA?</h3>
+      <p style="color: #ccc; font-size: 0.9rem; margin-bottom: 15px">
+        Use o ChatGPT ou Gemini para gerar o código do Quiz rapidamente.
+      </p>
+
+      <div
+        style="
+          position: relative;
+          padding-bottom: 56.25%;
+          height: 0;
+          overflow: hidden;
+          border-radius: 6px;
+          background: #000;
+          margin-bottom: 15px;
+        "
+      >
+        <iframe
+          style="position: absolute; top: 0; left: 0; width: 100%; height: 100%"
+          src="https://www.youtube.com/embed/ngmG_OLJBf4"
+          title="Tutorial Quiz IA"
+          frameborder="0"
+          allowfullscreen
+        ></iframe>
+      </div>
+
+      <p style="color: #aaa; font-size: 0.85rem">
+        <strong>Prompt para IA:</strong> "Crie um JSON de quiz sobre [assunto]
+        com 5 perguntas. O formato deve ser: lista de objetos com 'question'
+        (string) e 'answers' (lista de objetos com 'text' e 'correct' boolean)."
+      </p>
+      <button class="btn" id="close-help" style="width: 100%; margin-top: 10px">
+        Entendi
+      </button>
+    </div>
+
+    <div vw class="enabled">
+      <div vw-access-button class="active"></div>
+      <div vw-plugin-wrapper>
+        <div class="vw-plugin-top-wrapper"></div>
+      </div>
+    </div>
+    <div id="desc-modal" class="modal">
+      <div class="modal-content" style="max-width: 500px">
+        <span class="close-modal" onclick="closeDescModal()">×</span>
+        <h3
+          id="desc-modal-title"
+          style="color: var(--accent-color); margin-bottom: 15px"
+        ></h3>
+        <p
+          id="desc-modal-text"
+          style="white-space: pre-wrap; word-break: break-word; color: #fff"
+        ></p>
+        <button
+          class="btn"
+          onclick="closeDescModal()"
+          style="width: 100%; margin-top: 20px"
+        >
+          Fechar
+        </button>
+      </div>
+    </div>
+    <script src="https://vlibras.gov.br/app/vlibras-plugin.js"></script>
+
+    <script>
+      new window.VLibras.Widget("https://vlibras.gov.br/app");
+
+      // === CONFIGURAÇÃO FIREBASE ===
+      const firebaseConfig = {
+        apiKey: "AIzaSyAErlpmobBTnLhS3ZPYZKtXS8G1I9xsvQM",
+        authDomain: "seli-logistica.firebaseapp.com",
+        databaseURL: "https://seli-logistica-default-rtdb.firebaseio.com",
+        projectId: "seli-logistica",
+        storageBucket: "seli-logistica.firebasestorage.app",
+        messagingSenderId: "726944272672",
+        appId: "1:726944272672:web:3eb39e001495a923f2c745",
+      };
+      firebase.initializeApp(firebaseConfig);
+      const auth = firebase.auth();
+      const db = firebase.database();
+
+      let isProfessor = false;
+      const grids = {
+        Básico: document.getElementById("basico-grid"),
+        Intermediário: document.getElementById("intermediario-grid"),
+        Avançado: document.getElementById("avancado-grid"),
+      };
+
+      // 1. Autenticação e Role
+      auth.onAuthStateChanged((user) => {
+        if (!user) return (location.href = "index.html");
+
+        document.getElementById("logout-btn").style.display = "block";
+        document.getElementById("logout-btn").onclick = () =>
+          auth.signOut().then(() => (location.href = "index.html"));
+
+        db.ref(`users/${user.uid}/role`)
+          .once("value")
+          .then((s) => {
+            isProfessor = (s.val() || "aluno") === "professor";
+            loadQuizzes();
+          });
+      });
+
+      // --- CARREGAR QUIZZES (ATUALIZADA) ---
+      function loadQuizzes() {
+        db.ref("quizzes").on("value", (snap) => {
+          const data = snap.val() || {};
+
+          // Limpar grids
+          Object.values(grids).forEach((g) => (g.innerHTML = ""));
+
+          Object.entries(data).forEach(([id, quiz]) => {
+            if (!quiz.level || !grids[quiz.level]) return;
+
+            const card = document.createElement("div");
+            card.className = "material-card fade-in";
+
+            // --- BOTÕES ADMIN ---
+            let adminHtml = "";
+            if (isProfessor) {
+              const btnDown =
+                quiz.level !== "Avançado"
+                  ? `<button class="admin-btn btn-move" onclick="moveQuiz(event, '${id}', '${quiz.level}', 'down')"><i class="fas fa-arrow-down"></i></button>`
+                  : "";
+              const btnUp =
+                quiz.level !== "Básico"
+                  ? `<button class="admin-btn btn-move" onclick="moveQuiz(event, '${id}', '${quiz.level}', 'up')"><i class="fas fa-arrow-up"></i></button>`
+                  : "";
+
+              adminHtml = `
+                    <div class="admin-controls">
+                        ${btnUp} ${btnDown}
+                        <button class="admin-btn btn-delete" onclick="delQuiz('${id}'); event.stopPropagation();"><i class="fas fa-trash"></i></button>
+                    </div>
+                `;
+            }
+
+            const questionCount = quiz.questions ? quiz.questions.length : 0;
+            const description = quiz.description || "Sem descrição.";
+
+            // Lógica: Se a descrição for longa (> 100 chars), mostra botão "Ver mais"
+            // Nota: O CSS já corta visualmente, o botão é para abrir o modal
+            const isLong = description.length > 100;
+            const readMoreHtml = isLong
+              ? `<button class="read-more-btn" onclick="openDescModal(event, '${id}')">Ler descrição completa</button>`
+              : "";
+
+            card.innerHTML = `
+                ${adminHtml}
+                <div>
+                    <h3>${quiz.title}</h3>
+                    <p class="material-preview" id="desc-${id}">${description}</p>
+                    ${readMoreHtml}
+                </div>
+                <div class="card-meta" style="margin-top:auto; padding-top:15px;">
+                    <i class="fas fa-question-circle"></i> ${questionCount} Questões
+                </div>
+            `;
+
+            // Clique no CARD leva para o Quiz
+            card.onclick = (e) => {
+              // Se clicar nos botões admin ou ver mais, não abre o quiz
+              if (
+                !e.target.closest(".admin-controls") &&
+                !e.target.closest(".read-more-btn")
+              ) {
+                location.href = `executar-quiz.html?id=${id}`;
+              }
+            };
+
+            grids[quiz.level].appendChild(card);
+          });
+
+          if (isProfessor) showAddButton();
+          initFadeIn();
+        });
+      }
+
+      // --- FUNÇÕES DO MODAL DE DESCRIÇÃO ---
+      window.openDescModal = (e, id) => {
+        e.stopPropagation(); // Não iniciar o quiz
+        const fullDesc = document.getElementById(`desc-${id}`).innerText;
+        // Pega o título do quiz procurando no elemento pai
+        const title = document.getElementById(`desc-${id}`)
+          .previousElementSibling.innerText;
+
+        document.getElementById("desc-modal-title").innerText = title;
+        document.getElementById("desc-modal-text").innerText = fullDesc;
+        document.getElementById("desc-modal").classList.add("active");
+      };
+
+      window.closeDescModal = () => {
+        document.getElementById("desc-modal").classList.remove("active");
+      };
+
+      function showAddButton() {
+        document.querySelectorAll(".add-card").forEach((e) => e.remove());
+        const add = document.createElement("div");
+        add.className = "material-card add-card fade-in";
+        add.innerHTML = `<i class="fas fa-plus"></i><p>Criar Novo Quiz</p>`;
+        add.onclick = () => {
+          // Resetar modal
+          document.getElementById("quiz-title").value = "";
+          document.getElementById("quiz-desc").value = "";
+          document.getElementById("questions-container").innerHTML = "";
+          document.getElementById("quiz-json").value = "";
+          addVisualQuestion(); // Adiciona uma pergunta inicial
+          switchMode("visual");
+          document.getElementById("add-modal").classList.add("active");
+        };
+        grids["Avançado"].appendChild(add);
+      }
+
+      window.delQuiz = (id) => {
+        if (confirm("Tem certeza que deseja apagar este Quiz?")) {
+          db.ref(`quizzes/${id}`).remove().catch(alert);
+        }
+      };
+
+      // === LÓGICA DO CONSTRUTOR VISUAL ===
+
+      // Alternar entre Visual e JSON
+      window.switchMode = (mode) => {
+        const visualBtn = document.getElementById("btn-mode-visual");
+        const jsonBtn = document.getElementById("btn-mode-json");
+        const visualDiv = document.getElementById("visual-builder");
+        const jsonDiv = document.getElementById("json-builder");
+
+        if (mode === "visual") {
+          // Sincronizar: JSON -> Visual
+          try {
+            const jsonStr = document.getElementById("quiz-json").value.trim();
+            if (jsonStr) {
+              const data = JSON.parse(jsonStr);
+              renderVisualBuilder(data);
+            }
+          } catch (e) {
+            console.log("JSON vazio ou inválido, mantendo visual atual");
+          }
+
+          visualBtn.classList.add("active");
+          jsonBtn.classList.remove("active");
+          visualDiv.classList.add("active");
+          jsonDiv.classList.remove("active");
+        } else {
+          // Sincronizar: Visual -> JSON
+          const data = buildJsonFromVisual();
+          document.getElementById("quiz-json").value = JSON.stringify(
+            data,
+            null,
+            2
+          );
+
+          jsonBtn.classList.add("active");
+          visualBtn.classList.remove("active");
+          jsonDiv.classList.add("active");
+          visualDiv.classList.remove("active");
+        }
+      };
+
+      // Renderizar o HTML baseado nos dados (JSON -> HTML)
+      function renderVisualBuilder(questions) {
+        const container = document.getElementById("questions-container");
+        container.innerHTML = "";
+        questions.forEach((q) => createQuestionElement(q));
+      }
+
+      // Criar uma nova pergunta visual
+      window.addVisualQuestion = () => {
+        createQuestionElement({
+          question: "",
+          answers: [
+            { text: "", correct: false },
+            { text: "", correct: false },
+          ],
+        });
+      };
+
+      function createQuestionElement(data) {
+        const container = document.getElementById("questions-container");
+        const qIndex = container.children.length;
+
+        const div = document.createElement("div");
+        div.className = "question-block";
+        div.innerHTML = `
+            <div class="q-header">
+                <span class="q-number">Pergunta ${qIndex + 1}</span>
+                <i class="fas fa-trash btn-remove-q" onclick="this.closest('.question-block').remove(); updateNumbers();"></i>
+            </div>
+            <input type="text" class="input-q-text" placeholder="Digite a pergunta..." value="${
+              data.question || ""
+            }">
+            
+            <div class="options-list"></div>
+            <button class="btn-add-opt" onclick="addOptionTo(this)">+ Opção</button>
+        `;
+
+        const optList = div.querySelector(".options-list");
+        (data.answers || []).forEach((ans) => addOptionHTML(optList, ans));
+
+        container.appendChild(div);
+      }
+
+      // Adicionar opção a uma pergunta específica
+      window.addOptionTo = (btn) => {
+        const list = btn.previousElementSibling;
+        addOptionHTML(list, { text: "", correct: false });
+      };
+
+      function addOptionHTML(container, data) {
+        const row = document.createElement("div");
+        row.className = "option-row";
+        row.innerHTML = `
+            <input type="checkbox" class="option-check" title="É a correta?" ${
+              data.correct ? "checked" : ""
+            }>
+            <input type="text" class="option-input" placeholder="Resposta" value="${
+              data.text || ""
+            }">
+            <i class="fas fa-times btn-remove-opt" onclick="this.parentElement.remove()"></i>
+        `;
+        // Garante comportamento de Radio (apenas uma correta por pergunta)
+        const checkbox = row.querySelector(".option-check");
+        checkbox.addEventListener("change", function () {
+          if (this.checked) {
+            // Desmarca os outros da mesma pergunta
+            const siblings = container.querySelectorAll(".option-check");
+            siblings.forEach((cb) => {
+              if (cb !== this) cb.checked = false;
+            });
+          }
+        });
+
+        container.appendChild(row);
+      }
+
+      // Atualiza números das perguntas após exclusão
+      window.updateNumbers = () => {
+        document.querySelectorAll(".question-block").forEach((el, index) => {
+          el.querySelector(".q-number").innerText = `Pergunta ${index + 1}`;
+        });
+      };
+
+      // Construir o Objeto de Dados a partir do HTML (HTML -> JSON)
+      function buildJsonFromVisual() {
+        const blocks = document.querySelectorAll(".question-block");
+        const questions = [];
+
+        blocks.forEach((block) => {
+          const qText = block.querySelector(".input-q-text").value.trim();
+          const answers = [];
+          block.querySelectorAll(".option-row").forEach((row) => {
+            const aText = row.querySelector(".option-input").value.trim();
+            const isCorrect = row.querySelector(".option-check").checked;
+            if (aText) answers.push({ text: aText, correct: isCorrect });
+          });
+
+          if (qText && answers.length > 0) {
+            questions.push({ question: qText, answers: answers });
+          }
+        });
+        return questions;
+      }
+
+      // === INTERAÇÃO DOS MODAIS ===
+      document.getElementById("close-modal").onclick = () =>
+        document.getElementById("add-modal").classList.remove("active");
+
+      // Ajuda / IA Modal
+      const helpModal = document.getElementById("help-modal");
+      const helpOverlay = document.getElementById("overlay-help");
+
+      document.getElementById("open-help").onclick = () => {
+        helpModal.classList.add("active");
+        helpOverlay.classList.add("active");
+      };
+
+      function closeHelp() {
+        helpModal.classList.remove("active");
+        helpOverlay.classList.remove("active");
+      }
+      document.getElementById("close-help").onclick = closeHelp;
+      helpOverlay.onclick = closeHelp;
+
+      // === SALVAR ===
+      document.getElementById("btn-salvar").onclick = () => {
+        const title = document.getElementById("quiz-title").value.trim();
+        const level = document.getElementById("quiz-level").value;
+        const desc = document.getElementById("quiz-desc").value.trim();
+
+        // Verifica qual modo está ativo para pegar os dados
+        let questions = [];
+        if (
+          document.getElementById("visual-builder").classList.contains("active")
+        ) {
+          questions = buildJsonFromVisual();
+        } else {
+          try {
+            const jsonStr = document.getElementById("quiz-json").value.trim();
+            if (jsonStr) questions = JSON.parse(jsonStr);
+          } catch (e) {
+            return alert("JSON inválido no Modo Avançado.");
+          }
+        }
+
+        if (!title || questions.length === 0)
+          return alert("Preencha título e adicione pelo menos uma pergunta.");
+
+        // Verifica se cada pergunta tem pelo menos uma resposta certa
+        const invalidQ = questions.find(
+          (q) => !q.answers.some((a) => a.correct)
+        );
+        if (invalidQ)
+          return alert(
+            `A pergunta "${invalidQ.question}" não tem nenhuma resposta marcada como correta.`
+          );
+
+        const btn = document.getElementById("btn-salvar");
+        btn.disabled = true;
+        btn.innerText = "Salvando...";
+
+        db.ref("quizzes")
+          .push({
+            title,
+            level,
+            description: desc,
+            questions,
+            author: auth.currentUser.displayName,
+            createdAt: Date.now(),
+          })
+          .then(() => {
+            alert("Quiz criado com sucesso!");
+            document.getElementById("add-modal").classList.remove("active");
+          })
+          .finally(() => {
+            btn.disabled = false;
+            btn.innerText = "Salvar Quiz";
+          });
+      };
+
+      // Animação
+      function initFadeIn() {
+        const observer = new IntersectionObserver(
+          (entries) => {
+            entries.forEach((entry) => {
+              if (entry.isIntersecting) {
+                entry.target.classList.add("visible");
+                observer.unobserve(entry.target);
+              }
+            });
+          },
+          { threshold: 0.1 }
+        );
+        document
+          .querySelectorAll(".fade-in")
+          .forEach((el) => observer.observe(el));
+      }
+      initFadeIn();
+
+      const LEVELS = ["Básico", "Intermediário", "Avançado"];
+
+      // --- NOVA FUNÇÃO DE MOVER QUIZ ---
+      window.moveQuiz = (e, id, currentLevel, direction) => {
+        e.stopPropagation();
+        const currentIndex = LEVELS.indexOf(currentLevel);
+        let newIndex = direction === "up" ? currentIndex - 1 : currentIndex + 1;
+
+        if (newIndex < 0 || newIndex >= LEVELS.length) return;
+        const newLevel = LEVELS[newIndex];
+
+        db.ref("quizzes/" + id)
+          .update({ level: newLevel })
+          .catch((err) => alert("Erro ao mover: " + err.message));
+      };
+
+      // --- LOAD QUIZZES ATUALIZADO ---
+      function loadQuizzes() {
+        db.ref("quizzes").on("value", (snap) => {
+          const data = snap.val() || {};
+          Object.values(grids).forEach((g) => (g.innerHTML = ""));
+
+          Object.entries(data).forEach(([id, quiz]) => {
+            if (!quiz.level || !grids[quiz.level]) return;
+
+            const card = document.createElement("div");
+            card.className = "material-card fade-in";
+
+            // --- BOTÕES ADMIN ---
+            let adminHtml = "";
+            if (isProfessor) {
+              const btnDown =
+                quiz.level !== "Avançado"
+                  ? `<button class="admin-btn btn-move" onclick="moveQuiz(event, '${id}', '${quiz.level}', 'down')"><i class="fas fa-arrow-down"></i></button>`
+                  : "";
+              const btnUp =
+                quiz.level !== "Básico"
+                  ? `<button class="admin-btn btn-move" onclick="moveQuiz(event, '${id}', '${quiz.level}', 'up')"><i class="fas fa-arrow-up"></i></button>`
+                  : "";
+
+              adminHtml = `
+                        <div class="admin-controls">
+                            ${btnUp} ${btnDown}
+                            <button class="admin-btn btn-delete" onclick="delQuiz('${id}'); event.stopPropagation();"><i class="fas fa-trash"></i></button>
+                        </div>
+                    `;
+            }
+
+            const questionCount = quiz.questions ? quiz.questions.length : 0;
+
+            card.innerHTML = `
+                    ${adminHtml}
+                    <h3>${quiz.title}</h3>
+                    <p class="material-preview">${
+                      quiz.description || "Sem descrição."
+                    }</p>
+                    <div class="card-meta"><i class="fas fa-question-circle"></i> ${questionCount} Questões</div>
+                `;
+
+            card.onclick = (e) => {
+              if (!e.target.closest(".admin-controls"))
+                location.href = `executar-quiz.html?id=${id}`;
+            };
+
+            grids[quiz.level].appendChild(card);
+          });
+
+          if (isProfessor) showAddButton();
+          initFadeIn();
+        });
+      }
+    </script>
+  </body>
+</html>

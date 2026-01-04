@@ -1,0 +1,636 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Materiais Didáticos - SELI</title>
+
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@300;400;600;700&display=swap" rel="stylesheet">
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.2/css/all.min.css">
+
+
+  <!-- Firebase -->
+  <script src="https://www.gstatic.com/firebasejs/9.23.0/firebase-app-compat.js"></script>
+  <script src="https://www.gstatic.com/firebasejs/9.23.0/firebase-auth-compat.js"></script>
+  <script src="https://www.gstatic.com/firebasejs/9.23.0/firebase-database-compat.js"></script>
+  <script src="https://www.gstatic.com/firebasejs/9.23.0/firebase-storage-compat.js"></script>
+
+  <!-- Acessibilidades -->
+  <link rel="stylesheet" href="acessibilidade.css">
+  <script src="acessibilidade.js"></script>
+
+  <style>
+    :root {
+      --bg-color: #121212;
+      --surface-color: #1E1E1E;
+      --primary-text-color: #E0E0E0;
+      --secondary-text-color: #A0A0A0;
+      --accent-color: #007BFF;
+      --accent-hover-color: #0056b3;
+      --border-color: #333333;
+      --delete-color: #dc3545;
+    }
+
+    * {
+      margin: 0;
+      padding: 0;
+      box-sizing: border-box;
+    }
+
+    body {
+      font-family: 'Poppins', sans-serif;
+      background: var(--bg-color);
+      color: var(--primary-text-color);
+      line-height: 1.6;
+    }
+
+    .container {
+      width: 90%;
+      max-width: 1200px;
+      margin: 0 auto;
+    }
+
+    section {
+      padding: 100px 0;
+      overflow: hidden;
+    }
+
+    h1,
+    h2,
+    h3 {
+      font-weight: 600;
+      color: #FFF;
+    }
+
+    h1 {
+      font-size: 3rem;
+      text-align: center;
+      margin-bottom: 20px;
+    }
+
+    h2 {
+      font-size: 2.5rem;
+      margin-bottom: 60px;
+      text-align: center;
+    }
+
+    /* Header (igual ao início.html) */
+    .header {
+      position: fixed;
+      top: 0;
+      left: 0;
+      width: 100%;
+      padding: 15px 0;
+      background: rgba(30, 30, 30, 0.9);
+      backdrop-filter: blur(10px);
+      z-index: 1000;
+    }
+
+    .navbar {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+    }
+
+    .logo {
+      font-size: 1.8rem;
+      font-weight: 700;
+      color: #FFF;
+      text-decoration: none;
+    }
+
+    .logo i {
+      color: var(--accent-color);
+      margin-right: 8px;
+    }
+
+    .nav-links {
+      display: flex;
+      gap: 35px;
+      list-style: none;
+      align-items: center;
+    }
+
+    .nav-links a {
+      color: var(--primary-text-color);
+      text-decoration: none;
+      padding: 8px 10px;
+      transition: color .3s;
+    }
+
+    .nav-links a:hover {
+      color: var(--accent-color);
+    }
+
+    .btn {
+      padding: 10px 24px;
+      background: var(--accent-color);
+      color: #fff;
+      border-radius: 5px;
+      font-weight: 600;
+      transition: .3s;
+    }
+
+    .btn:hover {
+      background: var(--accent-hover-color);
+      transform: translateY(-2px);
+    }
+
+    .btn-secondary {
+      background: transparent;
+      border: 2px solid var(--accent-color);
+    }
+
+    .btn-secondary:hover {
+      background: var(--accent-color);
+    }
+
+    /* Dropdown Estudo */
+    .dropdown {
+      position: relative;
+    }
+
+    .dropdown-menu {
+      display: none;
+      position: absolute;
+      top: 100%;
+      left: 0;
+      background: var(--surface-color);
+      min-width: 200px;
+      border: 1px solid var(--border-color);
+      border-radius: 5px;
+      box-shadow: 0 5px 15px rgba(0, 0, 0, 0.3);
+      list-style: none;
+    }
+
+    .dropdown-menu a {
+      display: block;
+      padding: 12px 20px;
+      color: var(--primary-text-color);
+    }
+
+    .dropdown-menu a:hover {
+      background: var(--border-color);
+      color: var(--accent-color);
+    }
+
+    .dropdown:hover .dropdown-menu {
+      display: block;
+    }
+
+    .page-hero {
+      padding: 180px 0 80px;
+      text-align: center;
+    }
+
+    .level-section {
+      padding: 60px 0;
+      border-bottom: 1px solid var(--border-color);
+    }
+
+    .level-title {
+      font-size: 2.2rem;
+      margin-bottom: 40px;
+      border-left: 5px solid var(--accent-color);
+      padding-left: 15px;
+    }
+
+    .material-grid {
+      display: grid;
+      grid-template-columns: repeat(auto-fit, minmax(320px, 1fr));
+      gap: 30px;
+    }
+
+    .material-card {
+      background: var(--surface-color);
+      border-radius: 10px;
+      padding: 20px;
+      cursor: pointer;
+      border: 1px solid var(--border-color);
+      transition: transform .3s, box-shadow .3s;
+      position: relative;
+    }
+
+    .material-card:hover {
+      transform: translateY(-8px);
+      box-shadow: 0 10px 25px rgba(0, 0, 0, 0.3);
+    }
+
+    .material-card h3 {
+      font-size: 1.2rem;
+      margin-bottom: 10px;
+    }
+
+    .material-preview {
+      font-size: 0.95rem;
+      color: var(--secondary-text-color);
+      max-height: 100px;
+      overflow: hidden;
+    }
+
+    .delete-btn {
+      position: absolute;
+      top: 12px;
+      right: 12px;
+      color: var(--delete-color);
+      font-size: 1.3rem;
+      cursor: pointer;
+    }
+
+    .add-card {
+      background: var(--surface-color);
+      border: 2px dashed var(--accent-color);
+      color: var(--accent-color);
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      justify-content: center;
+      text-align: center;
+      cursor: pointer;
+      transition: all .3s;
+    }
+
+    .add-card:hover {
+      background: var(--accent-color);
+      color: #fff;
+      transform: translateY(-5px);
+    }
+
+    .add-card i {
+      font-size: 4rem;
+      margin-bottom: 10px;
+    }
+
+    .modal {
+      display: none;
+      position: fixed;
+      inset: 0;
+      background: rgba(0, 0, 0, 0.8);
+      justify-content: center;
+      align-items: center;
+      z-index: 2000;
+    }
+
+    .modal.active {
+      display: flex;
+    }
+
+    .modal-content {
+      background: var(--surface-color);
+      padding: 30px;
+      border-radius: 12px;
+      width: 90%;
+      max-width: 600px;
+      position: relative;
+    }
+
+    .close-modal {
+      position: absolute;
+      top: 15px;
+      right: 20px;
+      font-size: 1.8rem;
+      cursor: pointer;
+      color: var(--secondary-text-color);
+    }
+
+    .fade-in {
+      opacity: 0;
+      transform: translateY(30px);
+      transition: opacity .6s, transform .6s;
+    }
+
+    .fade-in.visible {
+      opacity: 1;
+      transform: none;
+    }
+
+    /* === CONTROLES DO PROFESSOR (NOVO) === */
+    .admin-controls {
+      position: absolute;
+      top: 10px;
+      right: 10px;
+      display: flex;
+      gap: 5px;
+      z-index: 10;
+    }
+
+    .admin-btn {
+      width: 32px;
+      height: 32px;
+      border-radius: 50%;
+      border: none;
+      display: flex;
+      justify-content: center;
+      align-items: center;
+      cursor: pointer;
+      font-size: 0.9rem;
+      color: white;
+      transition: transform 0.2s, background-color 0.2s;
+      box-shadow: 0 2px 5px rgba(0, 0, 0, 0.3);
+    }
+
+    .admin-btn:hover {
+      transform: scale(1.1);
+    }
+
+    .btn-delete {
+      background-color: var(--delete-color);
+    }
+
+    .btn-move {
+      background-color: var(--accent-color);
+    }
+
+    /* Garante que o card não clique quando apertar os botões */
+    .video-card,
+    .material-card {
+      position: relative;
+    }
+  </style>
+</head>
+
+<body>
+
+  <!-- HEADER -->
+  <header class="header">
+    <nav class="navbar container">
+      <a href="inicio.html" class="logo"><i class="fa-solid fa-compass"></i> SELI</a>
+      <ul class="nav-links">
+        <li><a href="inicio.html">Início</a></li>
+        <li class="dropdown">
+          <a>Estudo <i class="fas fa-caret-down"></i></a>
+          <ul class="dropdown-menu">
+            <li><a href="aulas.html">Vídeo-aulas</a></li>
+            <li><a href="materiais.html">Materiais Didáticos</a></li>
+            <li><a href="quizzes.html">Quizzes</a></li>
+          </ul>
+        </li>
+                <li><a href="Chatbot.html">SELIBot</a></li>
+        <li><a href="contato.html">Contato</a></li>
+        <li><a href="#" id="logout-btn" class="btn btn-secondary" style="display:none;">Sair</a></li>
+      </ul>
+    </nav>
+  </header>
+
+  <section class="page-hero">
+    <div class="container">
+      <h1>Materiais Didáticos</h1>
+      <p>Conteúdo criado pelos professores para apoiar seus estudos em logística.</p>
+    </div>
+  </section>
+
+  <section class="level-section">
+    <div class="container">
+      <h2 class="level-title">Básico</h2>
+      <div id="basico-grid" class="material-grid"></div>
+    </div>
+  </section>
+
+  <section class="level-section">
+    <div class="container">
+      <h2 class="level-title">Intermediário</h2>
+      <div id="intermediario-grid" class="material-grid"></div>
+    </div>
+  </section>
+
+  <section class="level-section">
+    <div class="container">
+      <h2 class="level-title">Avançado</h2>
+      <div id="avancado-grid" class="material-grid"></div>
+    </div>
+  </section>
+
+  <!-- MODAL ADICIONAR MATERIAL -->
+  <div id="add-modal" class="modal">
+    <div class="modal-content">
+      <span id="close-modal" class="close-modal">×</span>
+      <h2>Novo Material</h2>
+      <input type="text" id="mat-title" placeholder="Título do material" style="width:100%; padding:12px; margin:10px 0; background:#2a2a2a; border:1px solid #444; border-radius:6px; color:white;">
+      <select id="mat-level" style="width:100%; padding:12px; margin:10px 0; background:#2a2a2a; border:1px solid #444; border-radius:6px; color:white;">
+        <option>Básico</option>
+        <option>Intermediário</option>
+        <option>Avançado</option>
+      </select>
+      <textarea id="mat-content" rows="10" placeholder="Digite ou cole o conteúdo completo aqui..." style="width:100%; padding:12px; background:#2a2a2a; border:1px solid #444; border-radius:6px; color:white;"></textarea>
+      <input type="file" id="file-upload" accept=".pdf,.txt,.doc,.docx">
+      <button id="btn-salvar" class="btn" style="width:100%; margin-top:15px;">Salvar Material</button>
+    </div>
+  </div>
+
+  <div vw class="enabled">
+    <div vw-access-button class="active"></div>
+    <div vw-plugin-wrapper>
+      <div class="vw-plugin-top-wrapper"></div>
+    </div>
+  </div>
+  <script src="https://vlibras.gov.br/app/vlibras-plugin.js"></script>
+  <script>
+    new window.VLibras.Widget('https://vlibras.gov.br/app');
+
+    const firebaseConfig = {
+      apiKey: "AIzaSyAErlpmobBTnLhS3ZPYZKtXS8G1I9xsvQM",
+      authDomain: "seli-logistica.firebaseapp.com",
+      databaseURL: "https://seli-logistica-default-rtdb.firebaseio.com",
+      projectId: "seli-logistica",
+      storageBucket: "seli-logistica.firebasestorage.app",
+      messagingSenderId: "726944272672",
+      appId: "1:726944272672:web:3eb39e001495a923f2c745"
+    };
+    firebase.initializeApp(firebaseConfig);
+    const auth = firebase.auth();
+    const db = firebase.database();
+    const storage = firebase.storage();
+
+    let isProfessor = false;
+    const grids = {
+      'Básico': document.getElementById('basico-grid'),
+      'Intermediário': document.getElementById('intermediario-grid'),
+      'Avançado': document.getElementById('avancado-grid')
+    };
+
+    // 1. Tratamento de Autenticação e Papel
+    auth.onAuthStateChanged(user => {
+      if (!user) return location.href = 'index.html';
+
+      const logoutBtn = document.getElementById('logout-btn');
+      logoutBtn.style.display = 'block';
+      logoutBtn.onclick = e => {
+        e.preventDefault();
+        auth.signOut().then(() => location.href = 'index.html');
+      };
+
+      db.ref(`users/${user.uid}/role`).once('value').then(s => {
+        isProfessor = (s.val() || 'aluno') === 'professor';
+        loadMaterials();
+        // Garante que o botão de adicionar seja exibido apenas uma vez.
+        if (isProfessor) showAddButton();
+      });
+    });
+
+    // 2. Carregamento e Renderização dos Materiais
+    // Array de níveis para saber a ordem
+    const LEVELS = ['Básico', 'Intermediário', 'Avançado'];
+
+    // --- NOVA FUNÇÃO DE MOVER ---
+    window.moveMaterial = (e, id, currentLevel, direction) => {
+      e.stopPropagation(); // Impede abrir o material
+
+      const currentIndex = LEVELS.indexOf(currentLevel);
+      let newIndex = direction === 'up' ? currentIndex - 1 : currentIndex + 1;
+
+      // Segurança para não sair do array
+      if (newIndex < 0 || newIndex >= LEVELS.length) return;
+
+      const newLevel = LEVELS[newIndex];
+
+      db.ref('materials/' + id).update({ level: newLevel })
+        .catch(err => alert('Erro ao mover: ' + err.message));
+    };
+
+    // --- FUNÇÃO LOAD ATUALIZADA ---
+    function loadMaterials() {
+      db.ref('materials').on('value', snap => {
+        const data = snap.val() || {};
+        Object.values(grids).forEach(g => g.innerHTML = '');
+
+        Object.entries(data).forEach(([id, mat]) => {
+          if (!grids[mat.level]) return;
+
+          const card = document.createElement('div');
+          card.className = 'material-card fade-in';
+
+          // HTML DOS BOTÕES DE ADMINISTRAÇÃO
+          let adminHtml = '';
+          if (isProfessor) {
+            // Seta para BAIXO (Avançar nível) - Só aparece se não for Avançado
+            const btnDown = mat.level !== 'Avançado'
+              ? `<button class="admin-btn btn-move" title="Aumentar Nível" onclick="moveMaterial(event, '${id}', '${mat.level}', 'down')"><i class="fas fa-arrow-down"></i></button>`
+              : '';
+
+            // Seta para CIMA (Diminuir nível) - Só aparece se não for Básico
+            const btnUp = mat.level !== 'Básico'
+              ? `<button class="admin-btn btn-move" title="Diminuir Nível" onclick="moveMaterial(event, '${id}', '${mat.level}', 'up')"><i class="fas fa-arrow-up"></i></button>`
+              : '';
+
+            adminHtml = `
+                        <div class="admin-controls">
+                            ${btnUp}
+                            ${btnDown}
+                            <button class="admin-btn btn-delete" title="Excluir" onclick="del(event, '${id}')"><i class="fas fa-trash"></i></button>
+                        </div>
+                    `;
+          }
+
+          card.innerHTML = `
+                    ${adminHtml}
+                    <h3>${mat.title}</h3>
+                    <div class="material-preview">${mat.content ? mat.content.substring(0, 150) + '...' : 'Sem prévia'}</div>
+                `;
+
+          card.onclick = (e) => {
+            // Evita clique se for nos botões admin
+            if (!e.target.closest('.admin-controls')) location.href = `material.html?id=${id}`;
+          };
+
+          grids[mat.level].appendChild(card);
+        });
+
+        if (isProfessor) showAddButton();
+        initFadeIn();
+      });
+    }
+
+    // 3. Função para Adicionar o Botão 'Adicionar Material' (somente Professor)
+    function showAddButton() {
+      // Remove o botão antes de adicioná-lo, evitando duplicatas no grid
+      document.querySelectorAll('.add-card').forEach(e => e.remove());
+
+      const add = document.createElement('div');
+      add.className = 'material-card add-card fade-in';
+      add.innerHTML = `<i class="fas fa-plus"></i><p>Adicionar Material</p>`;
+      add.onclick = () => document.getElementById('add-modal').classList.add('active');
+
+      // Adiciona o botão na última grade (Avançado)
+      grids['Avançado'].appendChild(add);
+    }
+
+    // 4. Função Global de Exclusão (chamada pelo HTML)
+    window.del = (e, id) => {
+      e.stopPropagation(); // Usa o argumento 'e' para impedir que o clique abra o material
+      if (confirm('Tem certeza que deseja excluir este material?')) {
+        db.ref('materials/' + id).remove() // 'id' agora é o ID correto do material
+          .then(() => alert('Material excluído com sucesso!'))
+          .catch(err => alert('Erro ao excluir: ' + err.message));
+      }
+    }
+
+    // 5. Lógica do Modal e Salvar Material
+    document.getElementById('close-modal').onclick = () => document.getElementById('add-modal').classList.remove('active');
+
+    document.getElementById('btn-salvar').onclick = async () => {
+      const title = document.getElementById('mat-title').value.trim();
+      const level = document.getElementById('mat-level').value;
+      const content = document.getElementById('mat-content').value.trim();
+      const file = document.getElementById('file-upload').files[0];
+      const btnSalvar = document.getElementById('btn-salvar');
+
+      if (!title || (!content && !file)) return alert('Preencha título e conteúdo ou faça upload de um arquivo!');
+
+      btnSalvar.disabled = true;
+      btnSalvar.textContent = 'Salvando... Aguarde';
+
+      let fileUrl = null;
+      try {
+        if (file) {
+          const ref = storage.ref(`materiais/${Date.now()}_${file.name}`);
+          await ref.put(file);
+          fileUrl = await ref.getDownloadURL();
+        }
+
+        await db.ref('materials').push({
+          title,
+          level,
+          content,
+          fileUrl: fileUrl || null,
+          author: auth.currentUser.displayName || auth.currentUser.email,
+          createdAt: Date.now()
+        });
+
+        alert('Material salvo com sucesso!');
+        document.getElementById('add-modal').classList.remove('active');
+        document.getElementById('mat-title').value = '';
+        document.getElementById('mat-content').value = '';
+        document.getElementById('file-upload').value = '';
+
+      } catch (error) {
+        alert('Erro ao salvar material: ' + error.message);
+        console.error(error);
+      } finally {
+        btnSalvar.disabled = false;
+        btnSalvar.textContent = 'Salvar Material';
+      }
+    };
+
+    // 6. Configuração da Animação Fade-In (correta e otimizada)
+    const observer = new IntersectionObserver(es => {
+      es.forEach(e => {
+        if (e.isIntersecting) {
+          e.target.classList.add('visible');
+          observer.unobserve(e.target);
+        }
+      });
+    }, { threshold: 0.1 });
+
+    function initFadeIn() {
+      document.querySelectorAll('.fade-in').forEach(el => observer.observe(el));
+    }
+    // Chama a animação na carga inicial
+    initFadeIn();
+
+  </script>
+</body>
+
+</html>

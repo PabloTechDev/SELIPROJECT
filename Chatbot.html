@@ -1,0 +1,643 @@
+<!DOCTYPE html>
+<html lang="pt-br">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>SELI - IA Logística</title>
+
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@300;400;600;700&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.2/css/all.min.css">
+
+    <script src="https://www.gstatic.com/firebasejs/9.23.0/firebase-app-compat.js"></script>
+    <script src="https://www.gstatic.com/firebasejs/9.23.0/firebase-auth-compat.js"></script>
+
+    <link rel="stylesheet" href="acessibilidade.css">
+    <script src="acessibilidade.js"></script>
+
+    <style>
+        /* === ESTILOS VISUAIS (Mantendo o design Azul/Home) === */
+        :root {
+            --bg-color: #121212;
+            --surface-color: #1E1E1E;
+            --primary-text-color: #E0E0E0;
+            --secondary-text-color: #A0A0A0;
+            --accent-color: #007BFF;
+            --accent-hover-color: #0056b3;
+            --border-color: #333333;
+        }
+
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: 'Poppins', sans-serif;
+            background-color: var(--bg-color);
+            color: var(--primary-text-color);
+            background: linear-gradient(rgba(18, 18, 18, 0.85), rgba(18, 18, 18, 0.85)), url('https://images.unsplash.com/photo-1517486808906-6538cb3ea698?auto=format&fit=crop&q=80&w=2070') no-repeat center center/cover;
+            background-attachment: fixed;
+            min-height: 100vh;
+            display: flex;
+            flex-direction: column;
+        }
+
+        /* HEADER */
+        .header {
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            padding: 15px 0;
+            z-index: 1000;
+            background-color: rgba(30, 30, 30, 0.95);
+            backdrop-filter: blur(10px);
+            border-bottom: 1px solid var(--border-color);
+        }
+
+        .container {
+            width: 90%;
+            max-width: 1200px;
+            margin: 0 auto;
+        }
+
+        .navbar {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+        }
+
+        .logo {
+            font-size: 1.8rem;
+            font-weight: 700;
+            color: #FFFFFF;
+            text-decoration: none;
+        }
+
+        .logo i {
+            color: var(--accent-color);
+            margin-right: 8px;
+        }
+
+        .nav-links {
+            list-style: none;
+            display: flex;
+            align-items: center;
+            gap: 35px;
+        }
+
+        .nav-links a {
+            color: var(--primary-text-color);
+            text-decoration: none;
+            padding: 10px;
+            transition: color 0.3s ease;
+        }
+
+        .nav-links a:hover {
+            color: var(--accent-color);
+        }
+
+        .btn {
+            padding: 10px 24px;
+            background-color: var(--accent-color);
+            color: #FFFFFF !important;
+            text-decoration: none;
+            border-radius: 5px;
+            font-weight: 600;
+            border: 2px solid var(--accent-color);
+            transition: 0.3s;
+        }
+
+        .btn:hover {
+            background-color: var(--accent-hover-color);
+        }
+
+        .btn-secondary {
+            background-color: transparent;
+            border: 2px solid var(--accent-color);
+        }
+
+        .btn-secondary:hover {
+            background-color: var(--accent-color);
+        }
+
+        #user-menu {
+            display: none;
+            align-items: center;
+            gap: 10px;
+        }
+
+        .user-profile {
+            display: flex;
+            align-items: center;
+            gap: 8px;
+            color: var(--primary-text-color);
+            text-decoration: none;
+            padding: 8px 14px;
+            border-radius: 8px;
+            background-color: rgba(0, 123, 255, 0.1);
+            border: 1px solid var(--accent-color);
+        }
+
+        /* CHAT CONTAINER */
+        main {
+            flex: 1;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            padding-top: 80px;
+            padding-bottom: 20px;
+        }
+
+        .main-container {
+            display: flex;
+            width: 90%;
+            max-width: 1100px;
+            height: 80vh;
+            background-color: rgba(30, 30, 30, 0.9);
+            border-radius: 20px;
+            box-shadow: 0 0 50px rgba(0, 0, 0, 0.5);
+            overflow: hidden;
+            border: 1px solid var(--border-color);
+            backdrop-filter: blur(5px);
+        }
+
+        .sidebar {
+            width: 30%;
+            background-color: rgba(20, 20, 20, 0.95);
+            padding: 30px 20px;
+            display: flex;
+            flex-direction: column;
+            border-right: 1px solid var(--border-color);
+        }
+
+        .sidebar-title {
+            color: var(--accent-color);
+            font-size: 0.9rem;
+            font-weight: 700;
+            text-transform: uppercase;
+            margin-bottom: 10px;
+            letter-spacing: 1px;
+        }
+
+        .divider {
+            height: 1px;
+            background-color: var(--border-color);
+            width: 100%;
+            margin-bottom: 20px;
+        }
+
+        .questions-list {
+            flex: 1;
+            overflow-y: auto;
+            padding-right: 10px;
+        }
+
+        .question-btn {
+            background-color: transparent;
+            color: var(--secondary-text-color);
+            border: 1px solid var(--border-color);
+            width: 100%;
+            padding: 15px 20px;
+            margin-bottom: 12px;
+            border-radius: 12px;
+            text-align: left;
+            cursor: pointer;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            font-size: 0.9rem;
+            transition: all 0.3s ease;
+            font-family: 'Poppins', sans-serif;
+        }
+
+        .question-btn:hover {
+            background-color: rgba(0, 123, 255, 0.1);
+            color: var(--accent-color);
+            border-color: var(--accent-color);
+        }
+
+        .chat-area {
+            width: 70%;
+            background-color: transparent;
+            display: flex;
+            flex-direction: column;
+        }
+
+        .chat-header {
+            padding: 20px 30px;
+            display: flex;
+            align-items: center;
+            border-bottom: 1px solid var(--border-color);
+            background-color: rgba(30, 30, 30, 0.5);
+        }
+
+        .avatar-circle {
+            width: 50px;
+            height: 50px;
+            border-radius: 50%;
+            border: 2px solid var(--accent-color);
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            margin-right: 15px;
+            background-color: #000;
+            box-shadow: 0 0 15px rgba(0, 123, 255, 0.3);
+        }
+
+        .avatar-circle i {
+            font-size: 1.5rem;
+            color: var(--accent-color);
+        }
+
+        .bot-info h2 {
+            color: #FFFFFF;
+            font-size: 1.2rem;
+            font-weight: 600;
+        }
+
+        .status {
+            color: #4ade80;
+            font-size: 0.85rem;
+            display: flex;
+            align-items: center;
+            gap: 6px;
+        }
+
+        .status-dot {
+            width: 8px;
+            height: 8px;
+            background-color: #4ade80;
+            border-radius: 50%;
+        }
+
+        .messages {
+            flex: 1;
+            padding: 30px;
+            display: flex;
+            flex-direction: column;
+            gap: 15px;
+            overflow-y: auto;
+        }
+
+        .message-bubble {
+            padding: 15px 20px;
+            border-radius: 12px;
+            font-size: 0.95rem;
+            line-height: 1.6;
+            max-width: 80%;
+            word-wrap: break-word;
+        }
+
+        .bot-message {
+            background-color: #2C2C2C;
+            color: var(--primary-text-color);
+            align-self: flex-start;
+            border-bottom-left-radius: 2px;
+            border: 1px solid var(--border-color);
+        }
+
+        .user-message {
+            background-color: var(--accent-color);
+            color: white;
+            align-self: flex-end;
+            border-bottom-right-radius: 2px;
+            box-shadow: 0 4px 10px rgba(0, 123, 255, 0.2);
+        }
+
+        .typing-indicator {
+            color: var(--secondary-text-color);
+            font-size: 0.8rem;
+            margin-left: 40px;
+            margin-bottom: 10px;
+            display: none;
+            font-style: italic;
+        }
+
+        .input-area {
+            padding: 20px 30px;
+            background-color: rgba(20, 20, 20, 0.8);
+            border-top: 1px solid var(--border-color);
+        }
+
+        .input-wrapper {
+            position: relative;
+            display: flex;
+            align-items: center;
+        }
+
+        .chat-input {
+            width: 100%;
+            padding: 15px 60px 15px 20px;
+            background-color: #2C2C2C;
+            border: 1px solid var(--border-color);
+            border-radius: 30px;
+            color: white;
+            font-size: 0.95rem;
+            outline: none;
+            font-family: 'Poppins', sans-serif;
+            transition: border-color 0.3s ease;
+        }
+
+        .chat-input:focus {
+            border-color: var(--accent-color);
+        }
+
+        .send-btn {
+            position: absolute;
+            right: 8px;
+            width: 40px;
+            height: 40px;
+            background-color: var(--accent-color);
+            border: none;
+            border-radius: 50%;
+            color: white;
+            cursor: pointer;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            transition: 0.3s;
+        }
+
+        .send-btn:hover {
+            background-color: var(--accent-hover-color);
+        }
+
+        strong {
+            color: #fff;
+            font-weight: 700;
+        }
+
+        @media (max-width: 768px) {
+            .main-container {
+                flex-direction: column;
+                height: 85vh;
+                width: 95%;
+            }
+
+            .sidebar {
+                width: 100%;
+                height: 30%;
+                border-right: none;
+                border-bottom: 1px solid var(--border-color);
+            }
+
+            .chat-area {
+                width: 100%;
+                height: 70%;
+            }
+
+            .nav-links {
+                display: none;
+            }
+
+            main {
+                padding-top: 60px;
+            }
+        }
+    </style>
+</head>
+
+<body>
+
+    <header class="header" id="header">
+        <nav class="navbar container">
+            <a href="inicio.html" class="logo"><i class="fa-solid fa-compass"></i> SELI</a>
+            <ul class="nav-links">
+                <li><a href="inicio.html">Inicio</a></li>
+                <li><a href="aulas.html">Aulas</a></li>
+                <li id="auth-container">
+                    <a href="index.html" class="btn btn-secondary" id="login-btn">Login</a>
+                    <div id="user-menu">
+                        <a href="#" class="user-profile">
+                            <i class="fas fa-user-circle"></i>
+                            <span id="username-display"></span>
+                        </a>
+                    </div>
+                </li>
+            </ul>
+        </nav>
+    </header>
+
+    <main>
+        <div class="main-container">
+            <div class="sidebar">
+                <h3 class="sidebar-title"><i class="fa-solid fa-bolt"></i> Acesso Rápido</h3>
+                <div class="divider"></div>
+                <div class="questions-list">
+                    <button class="question-btn">O que é a SELI?<i class="fa-solid fa-chevron-right"></i></button>
+                    <button class="question-btn">Quais cursos vocês têm?<i class="fa-solid fa-chevron-right"></i></button>
+                    <button class="question-btn">Como funciona o cadastro?<i class="fa-solid fa-chevron-right"></i></button>
+                    <button class="question-btn">Qual o telefone de contato?<i class="fa-solid fa-chevron-right"></i></button>
+                    <button class="question-btn">É acessível para PCDs?<i class="fa-solid fa-chevron-right"></i></button>
+                </div>
+            </div>
+
+            <div class="chat-area">
+                <div class="chat-header">
+                    <div class="avatar-circle">
+                        <i class="fa-solid fa-compass"></i>
+                    </div>
+                    <div class="bot-info">
+                        <h2>SELI</h2>
+                        <div class="status">
+                            <span class="status-dot"></span> Online
+                        </div>
+                    </div>
+                </div>
+
+                <div class="messages" id="messagesBox">
+                    <div class="message-bubble bot-message">
+                        Olá! Sou a <strong>IA da SELI</strong>. Posso te ajudar com nossos cursos, cadastro ou dúvidas sobre logística inclusiva. O que você precisa?
+                    </div>
+                </div>
+
+                <div class="typing-indicator" id="typingIndicator">SELI está digitando...</div>
+
+                <div class="input-area">
+                    <div class="input-wrapper">
+                        <input type="text" class="chat-input" id="userInput" placeholder="Digite sua mensagem...">
+                        <button class="send-btn" id="sendBtn">
+                            <i class="fa-solid fa-paper-plane"></i>
+                        </button>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </main>
+
+    <script>
+        const firebaseConfig = {
+            apiKey: "AIzaSyAErlpmobBTnLhS3ZPYZKtXS8G1I9xsvQM",
+            authDomain: "seli-logistica.firebaseapp.com",
+            databaseURL: "https://seli-logistica-default-rtdb.firebaseio.com",
+            projectId: "seli-logistica",
+            storageBucket: "seli-logistica.firebasestorage.app",
+            messagingSenderId: "726944272672",
+            appId: "1:726944272672:web:3eb39e001495a923f2c745"
+        };
+        if (!firebase.apps.length) { firebase.initializeApp(firebaseConfig); }
+        const auth = firebase.auth();
+        auth.onAuthStateChanged((user) => {
+            const loginBtn = document.getElementById("login-btn");
+            const userMenu = document.getElementById("user-menu");
+            const usernameDisplay = document.getElementById("username-display");
+            if (user) {
+                loginBtn.style.display = "none";
+                userMenu.style.display = "flex";
+                usernameDisplay.textContent = user.displayName || user.email.split("@")[0];
+            } else {
+                loginBtn.style.display = "block";
+                userMenu.style.display = "none";
+            }
+        });
+    </script>
+
+    <script type="importmap">
+      {
+        "imports": {
+          "@google/generative-ai": "https://esm.run/@google/generative-ai"
+        }
+      }
+    </script>
+
+    <script type="module">
+        import { GoogleGenerativeAI } from "@google/generative-ai";
+
+        // === 1. LISTA DE CHAVES API (Failover System) ===
+        const apiKeys = [
+            "AIzaSyCtSsFC6-6HmarJeFOWvd0XZuf_Zpa1rT4", // Chave 1
+            "AIzaSyDblZ0_tRmvBNmddlsMOD_x8js_lO9gWbQ", // Chave 2
+            "AIzaSyA3kjS3pmOdjZacfKwmDdANzk78Lngxm6A"  // Chave 3
+        ];
+
+        let currentKeyIndex = 0;
+        let genAI = null;
+        let model = null;
+
+        // === CÉREBRO DA IA (Instruções) ===
+        const baseDeConhecimento = `
+        VOCÊ É A SELI: Uma assistente virtual de uma plataforma EAD de logística inclusiva.
+        
+        SOBRE A EMPRESA:
+        "A SELI nasceu da união de dois mundos: a precisão da logística e a necessidade de inclusão. Somos uma plataforma EAD que oferece cursos de alta qualidade na área de logística, com todo o material e suporte adaptados para as necessidades de pessoas com deficiência. Nossa metodologia foca em criar um fluxo de aprendizado contínuo e acessível."
+
+        NOSSO PROCESSO (Passo a Passo):
+        1. Cadastro Simplificado: Conta criada em poucos minutos, plataforma intuitiva.
+        2. Escolha sua Rota: O aluno escolhe trilhas de aprendizado ideais para sua carreira.
+        3. Aprenda no Seu Ritmo: Aulas e projetos práticos quando e onde quiser.
+        4. Conecte-se ao Mercado: Acesso ao portal de parceiros para vagas inclusivas após certificado.
+
+        CURSOS DISPONÍVEIS:
+        - Logística Integrada: Cadeia de suprimentos de ponta a ponta.
+        - Gestão de Estoques: Controle de inventários e redução de custos.
+        - Acessibilidade e Tecnologia: Cursos com legendas, LIBRAS e materiais diversos.
+
+        CONTATO E HORÁRIOS:
+        - Email: seli.contatoofc@gmail.com
+        - Telefone: (11) 94710-3016
+        - Endereço: São Paulo, SP - Brasil
+        - Horário: Segunda a Sexta, das 9h às 18h.
+
+        DIRETRIZES DE RESPOSTA:
+        - Seja educada, profissional e acolhedora.
+        - Responda de forma concisa (máximo 3 frases), a menos que peçam detalhes.
+        - Use formatação Markdown (negrito) para destacar e-mail, telefone e nomes de cursos.
+        - Se perguntarem algo fora desse contexto, diga que só pode responder sobre a SELI.
+        `;
+
+        // Função para inicializar o modelo com a chave atual
+        function initializeModel() {
+            //console.log(`Inicializando IA com chave ${currentKeyIndex + 1}...`);
+            genAI = new GoogleGenerativeAI(apiKeys[currentKeyIndex]);
+            model = genAI.getGenerativeModel({
+                model: "gemini-2.5-flash",
+                systemInstruction: baseDeConhecimento
+            });
+        }
+
+        // Inicia na primeira vez
+        initializeModel();
+
+        // Lógica de UI e Envio
+        const messagesContainer = document.getElementById('messagesBox');
+        const userInput = document.getElementById('userInput');
+        const sendBtn = document.getElementById('sendBtn');
+        const typingIndicator = document.getElementById('typingIndicator');
+        const quickBtns = document.querySelectorAll('.question-btn');
+
+        function addMessage(text, sender) {
+            const div = document.createElement('div');
+            div.classList.add('message-bubble');
+            div.classList.add(sender === 'user' ? 'user-message' : 'bot-message');
+            // Formata negrito **texto**
+            const formattedText = text.replace(/\*\*(.*?)\*\*/g, '<strong>$1</strong>');
+            div.innerHTML = formattedText;
+            messagesContainer.appendChild(div);
+            messagesContainer.scrollTop = messagesContainer.scrollHeight;
+        }
+
+        // === FUNÇÃO DE ENVIO COM SISTEMA DE ROTAÇÃO DE CHAVES ===
+        async function handleSend(textOverride = null) {
+            const text = textOverride || userInput.value.trim();
+            if (!text) return;
+
+            // Se for chamada via botão, limpa input e mostra msg do user
+            if (!textOverride) {
+                userInput.value = '';
+                addMessage(text, 'user');
+            }
+
+            typingIndicator.style.display = 'block';
+
+            try {
+                // Tenta gerar
+                const result = await model.generateContent(text);
+                const response = await result.response;
+                const botText = response.text();
+
+                typingIndicator.style.display = 'none';
+                addMessage(botText, 'bot');
+
+            } catch (error) {
+                console.warn(`Erro na chave ${currentKeyIndex + 1}:`, error);
+
+                // TENTA A PRÓXIMA CHAVE SE HOUVER
+                if (currentKeyIndex < apiKeys.length - 1) {
+                    // console.log("Trocando para chave reserva...");
+                    currentKeyIndex++;
+                    initializeModel(); // Recria o modelo com nova chave
+
+                    // Tenta de novo a mesma mensagem (Recursão)
+                    await handleSend(text);
+                } else {
+                    // SE ACABARAM TODAS AS CHAVES
+                    console.error("Todas as chaves falharam.");
+                    typingIndicator.style.display = 'none';
+                    addMessage("Desculpe, nosso sistema está temporariamente indisponível (Sobrecarga de API). Tente mais tarde.", 'bot');
+
+                    // Reset opcional para tentar do inicio depois
+                    currentKeyIndex = 0;
+                    initializeModel();
+                }
+            }
+        }
+
+        sendBtn.addEventListener('click', () => handleSend());
+        userInput.addEventListener('keypress', (e) => {
+            if (e.key === 'Enter') handleSend();
+        });
+        quickBtns.forEach(btn => {
+            btn.addEventListener('click', () => {
+                handleSend(btn.innerText);
+            });
+        });
+    </script>
+
+</body>
+
+</html>

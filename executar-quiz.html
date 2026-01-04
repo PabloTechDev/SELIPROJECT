@@ -1,0 +1,719 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Quiz - SELI</title>
+
+  <!-- Acessibilidades -->
+  <link rel="stylesheet" href="acessibilidade.css">
+  <script src="acessibilidade.js"></script>
+
+  <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@300;400;600;700&display=swap" rel="stylesheet" />
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.2/css/all.min.css" />
+
+  <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+
+  <script src="https://www.gstatic.com/firebasejs/9.23.0/firebase-app-compat.js"></script>
+  <script src="https://www.gstatic.com/firebasejs/9.23.0/firebase-auth-compat.js"></script>
+  <script src="https://www.gstatic.com/firebasejs/9.23.0/firebase-database-compat.js"></script>
+
+  <style>
+    /* === ESTILOS BASEADOS NO VIDEO.HTML === */
+    :root {
+      --bg-color: #121212;
+      --surface-color: #1e1e1e;
+      --primary-text-color: #e0e0e0;
+      --secondary-text-color: #a0a0a0;
+      --accent-color: #007bff;
+      --accent-hover: #0056b3;
+      --border-color: #333;
+      --correct-color: #28a745;
+      --incorrect-color: #dc3545;
+    }
+
+    * {
+      margin: 0;
+      padding: 0;
+      box-sizing: border-box;
+    }
+
+    body {
+      font-family: "Poppins", sans-serif;
+      background: var(--bg-color);
+      color: var(--primary-text-color);
+      padding-top: 80px;
+      /* Espaço para o header fixo */
+    }
+
+    .container {
+      width: 90%;
+      max-width: 1200px;
+      margin: 0 auto;
+    }
+
+    /* Header (Igual Video.html) */
+    .header {
+      position: fixed;
+      top: 0;
+      width: 100%;
+      background: rgba(30, 30, 30, 0.9);
+      backdrop-filter: blur(10px);
+      padding: 15px 0;
+      z-index: 1000;
+      border-bottom: 1px solid var(--border-color);
+    }
+
+    .navbar {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+    }
+
+    .logo {
+      font-size: 1.8rem;
+      font-weight: 700;
+      color: #fff;
+      text-decoration: none;
+    }
+
+    .logo i {
+      color: var(--accent-color);
+      margin-right: 8px;
+    }
+
+    .nav-links {
+      display: flex;
+      gap: 35px;
+      list-style: none;
+    }
+
+    .nav-links a {
+      color: var(--primary-text-color);
+      text-decoration: none;
+      transition: 0.3s;
+    }
+
+    .nav-links a:hover {
+      color: var(--accent-color);
+    }
+
+    .btn-nav {
+      padding: 8px 16px;
+      background: var(--accent-color);
+      border-radius: 5px;
+      color: white !important;
+    }
+
+    /* Layout Principal (Grid 2 Colunas) */
+    .quiz-page-layout {
+      display: grid;
+      grid-template-columns: 1fr 350px;
+      gap: 40px;
+      margin-top: 40px;
+      padding-bottom: 60px;
+    }
+
+    /* === ÁREA DO QUIZ (Esquerda) === */
+    .quiz-wrapper {
+      background: var(--surface-color);
+      border-radius: 10px;
+      padding: 30px;
+      border: 1px solid var(--border-color);
+      min-height: 400px;
+      position: relative;
+    }
+
+    .quiz-header-info {
+      margin-bottom: 20px;
+      border-bottom: 1px solid var(--border-color);
+      padding-bottom: 15px;
+    }
+
+    .quiz-title {
+      font-size: 2rem;
+      margin-bottom: 5px;
+      color: #fff;
+    }
+
+    .quiz-desc {
+      color: var(--secondary-text-color);
+      font-size: 0.95rem;
+    }
+
+    /* Barra de Progresso */
+    .progress-container {
+      width: 100%;
+      background: #333;
+      height: 8px;
+      border-radius: 4px;
+      margin: 20px 0;
+      overflow: hidden;
+    }
+
+    .progress-fill {
+      height: 100%;
+      background: var(--accent-color);
+      width: 0%;
+      transition: width 0.3s;
+    }
+
+    /* Perguntas e Botões */
+    .question-text {
+      font-size: 1.4rem;
+      margin-bottom: 25px;
+      font-weight: 600;
+    }
+
+    .options-grid {
+      display: grid;
+      gap: 15px;
+    }
+
+    .btn-option {
+      width: 100%;
+      padding: 15px;
+      text-align: left;
+      background: #2a2a2a;
+      border: 1px solid #444;
+      color: #eee;
+      border-radius: 8px;
+      cursor: pointer;
+      transition: 0.2s;
+      font-size: 1rem;
+      font-family: inherit;
+    }
+
+    .btn-option:hover:not([disabled]) {
+      background: #3a3a3a;
+      border-color: var(--accent-color);
+    }
+
+    .btn-option.correct {
+      background: rgba(40, 167, 69, 0.2);
+      border-color: var(--correct-color);
+      color: #81c784;
+    }
+
+    .btn-option.incorrect {
+      background: rgba(220, 53, 69, 0.2);
+      border-color: var(--incorrect-color);
+      color: #e57373;
+    }
+
+    .btn-next {
+      background: var(--accent-color);
+      color: white;
+      border: none;
+      padding: 12px 30px;
+      border-radius: 6px;
+      font-size: 1rem;
+      margin-top: 25px;
+      cursor: pointer;
+      float: right;
+      display: none;
+    }
+
+    /* === TELA DE RESULTADOS === */
+    .results-view {
+      text-align: center;
+      display: none;
+      animation: fadeIn 0.5s;
+    }
+
+    .chart-container {
+      position: relative;
+      height: 250px;
+      width: 100%;
+      display: flex;
+      justify-content: center;
+      margin: 20px 0;
+    }
+
+    .score-display {
+      font-size: 2.5rem;
+      font-weight: 700;
+      color: var(--accent-color);
+    }
+
+    .result-actions {
+      display: flex;
+      justify-content: center;
+      gap: 15px;
+      margin-top: 20px;
+    }
+
+    /* === SIDEBAR (Direita - Recomendações) === */
+    .sidebar h3 {
+      font-size: 1.2rem;
+      margin-bottom: 20px;
+      border-left: 4px solid var(--accent-color);
+      padding-left: 10px;
+    }
+
+    .rec-list {
+      display: flex;
+      flex-direction: column;
+      gap: 15px;
+    }
+
+    .rec-item {
+      display: flex;
+      align-items: center;
+      gap: 15px;
+      background: var(--surface-color);
+      padding: 10px;
+      border-radius: 8px;
+      text-decoration: none;
+      color: inherit;
+      transition: transform 0.2s;
+      border: 1px solid transparent;
+    }
+
+    .rec-item:hover {
+      transform: translateX(5px);
+      border-color: var(--border-color);
+    }
+
+    .rec-icon {
+      width: 50px;
+      height: 50px;
+      background: #2a2a2a;
+      color: var(--accent-color);
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      border-radius: 8px;
+      font-size: 1.2rem;
+    }
+
+    .rec-info h4 {
+      font-size: 0.95rem;
+      margin-bottom: 3px;
+    }
+
+    .rec-info span {
+      font-size: 0.8rem;
+      color: var(--secondary-text-color);
+    }
+
+    /* === PAINEL DO PROFESSOR === */
+    .teacher-panel {
+      margin-top: 30px;
+      background: #232323;
+      padding: 20px;
+      border-radius: 10px;
+      border: 1px dashed var(--accent-color);
+      display: none;
+      /* Só aparece se for professor */
+    }
+
+    .teacher-panel h3 {
+      color: var(--accent-color);
+      margin-bottom: 15px;
+      font-size: 1.1rem;
+    }
+
+    .student-row {
+      display: flex;
+      justify-content: space-between;
+      padding: 10px;
+      border-bottom: 1px solid #333;
+      font-size: 0.9rem;
+    }
+
+    .student-row:last-child {
+      border-bottom: none;
+    }
+
+    .score-badge {
+      padding: 2px 8px;
+      border-radius: 4px;
+      font-weight: bold;
+      background: #333;
+    }
+
+    /* Responsividade */
+    @media (max-width: 900px) {
+      .quiz-page-layout {
+        grid-template-columns: 1fr;
+      }
+    }
+
+    @keyframes fadeIn {
+      from {
+        opacity: 0;
+        transform: translateY(10px);
+      }
+
+      to {
+        opacity: 1;
+        transform: translateY(0);
+      }
+    }
+
+    /* Correção de quebra de texto na descrição do Quiz */
+    #quiz-description,
+    .quiz-desc-container {
+      white-space: pre-wrap;
+      /* Respeita quebras de linha e quebra se necessário */
+      word-wrap: break-word;
+      /* Quebra palavras longas */
+      overflow-wrap: break-word;
+      /* Suporte moderno para quebra */
+      word-break: break-word;
+      /* Força bruta para links muito longos */
+      max-width: 100%;
+      /* Garante que não ultrapasse o container */
+      line-height: 1.5;
+    }
+  </style>
+</head>
+
+<body>
+  <header class="header">
+    <nav class="navbar container">
+      <a href="inicio.html" class="logo"><i class="fa-solid fa-compass"></i> SELI</a>
+      <ul class="nav-links">
+        <li><a href="inicio.html">Início</a></li>
+        <li><a href="quizzes.html">Voltar aos Quizzes</a></li>
+      </ul>
+    </nav>
+  </header>
+
+  <main class="container quiz-page-layout">
+    <div class="main-content">
+      <div class="quiz-wrapper">
+        <div class="quiz-header-info">
+          <h1 id="quiz-title" class="quiz-title">Carregando...</h1>
+          <p id="quiz-desc" class="quiz-desc">...</p>
+        </div>
+
+        <div id="game-screen">
+          <div class="progress-container">
+            <div id="progress-fill" class="progress-fill"></div>
+          </div>
+          <div id="question-text" class="question-text"></div>
+          <div id="options-container" class="options-grid"></div>
+          <button id="next-btn" class="btn-next">
+            Próxima <i class="fas fa-arrow-right"></i>
+          </button>
+        </div>
+
+        <div id="result-screen" class="results-view">
+          <h2>Quiz Finalizado!</h2>
+          <p>Veja seu desempenho no tema:</p>
+          <h3 id="result-topic-name" style="color: var(--accent-color); margin: 5px 0 20px"></h3>
+
+          <div class="score-display">
+            <span id="final-score">0</span> /
+            <span id="total-questions">0</span>
+          </div>
+
+          <div class="chart-container">
+            <canvas id="performanceChart"></canvas>
+          </div>
+
+          <p id="feedback-msg" style="color: var(--secondary-text-color); margin-bottom: 20px"></p>
+
+          <div class="result-actions">
+            <button onclick="location.reload()" class="btn-nav" style="background: #333">
+              Refazer
+            </button>
+            <button onclick="location.href='quizzes.html'" class="btn-nav">
+              Outros Quizzes
+            </button>
+          </div>
+        </div>
+      </div>
+
+      <div id="teacher-panel" class="teacher-panel">
+        <h3>
+          <i class="fas fa-chalkboard-teacher"></i> Painel do Educador:
+          Desempenho da Turma
+        </h3>
+        <div id="students-list">
+          <p style="color: #666; font-style: italic">
+            Carregando dados dos alunos...
+          </p>
+        </div>
+      </div>
+    </div>
+
+    <div class="sidebar">
+      <h3>Veja Também</h3>
+      <div id="recommendations-list" class="rec-list"></div>
+    </div>
+  </main>
+
+  <script>
+    // === CONFIGURAÇÃO FIREBASE ===
+    const firebaseConfig = {
+      apiKey: "AIzaSyAErlpmobBTnLhS3ZPYZKtXS8G1I9xsvQM",
+      authDomain: "seli-logistica.firebaseapp.com",
+      databaseURL: "https://seli-logistica-default-rtdb.firebaseio.com",
+      projectId: "seli-logistica",
+      storageBucket: "seli-logistica.firebasestorage.app",
+      messagingSenderId: "726944272672",
+      appId: "1:726944272672:web:3eb39e001495a923f2c745",
+    };
+    firebase.initializeApp(firebaseConfig);
+    const auth = firebase.auth();
+    const db = firebase.database();
+
+    // Variáveis de Estado
+    let quizId, currentQuiz, userRole;
+    let currentQuestionIndex = 0;
+    let score = 0;
+    let myChart = null;
+
+    // === INICIALIZAÇÃO ===
+    auth.onAuthStateChanged((user) => {
+      if (!user) return (location.href = "index.html");
+
+      // Verifica Role
+      db.ref(`users/${user.uid}/role`)
+        .once("value")
+        .then((snap) => {
+          userRole = snap.val() || "aluno";
+          initPage();
+        });
+    });
+
+    function initPage() {
+      const params = new URLSearchParams(location.search);
+      quizId = params.get("id");
+      if (!quizId) return (location.href = "quizzes.html");
+
+      // 1. Carregar Quiz Atual
+      db.ref(`quizzes/${quizId}`)
+        .once("value")
+        .then((snap) => {
+          currentQuiz = snap.val();
+          if (!currentQuiz) return alert("Quiz não encontrado!");
+
+          document.title = `${currentQuiz.title} - SELI`;
+          document.getElementById("quiz-title").textContent =
+            currentQuiz.title;
+          document.getElementById("quiz-desc").textContent =
+            currentQuiz.description || "Teste seus conhecimentos.";
+          document.getElementById("result-topic-name").textContent =
+            currentQuiz.title;
+
+          loadRecommendations(); // Carregar Sidebar
+
+          // Se for professor, carrega o painel
+          if (userRole === "professor") {
+            loadTeacherPanel();
+          } else {
+            // Se for aluno, verifica se já fez (opcional, aqui permitimos refazer)
+          }
+
+          showQuestion();
+        });
+    }
+
+    // === LÓGICA DO JOGO ===
+    function showQuestion() {
+      const q = currentQuiz.questions[currentQuestionIndex];
+      const total = currentQuiz.questions.length;
+
+      // Atualiza UI
+      document.getElementById("question-text").textContent = `${currentQuestionIndex + 1
+        }. ${q.question}`;
+      document.getElementById("progress-fill").style.width = `${(currentQuestionIndex / total) * 100
+        }%`;
+
+      const optsContainer = document.getElementById("options-container");
+      optsContainer.innerHTML = "";
+      document.getElementById("next-btn").style.display = "none";
+
+      q.answers.forEach((ans, idx) => {
+        const btn = document.createElement("button");
+        btn.className = "btn-option";
+        btn.textContent = ans.text;
+        btn.onclick = () => selectAnswer(btn, ans.correct);
+        optsContainer.appendChild(btn);
+      });
+    }
+
+    function selectAnswer(btn, isCorrect) {
+      // Desabilita todos
+      const buttons = document.querySelectorAll(".btn-option");
+      buttons.forEach((b) => (b.disabled = true));
+
+      if (isCorrect) {
+        btn.classList.add("correct");
+        score++;
+      } else {
+        btn.classList.add("incorrect");
+        // Mostra qual era a certa
+        const currentQ = currentQuiz.questions[currentQuestionIndex];
+        const correctText = currentQ.answers.find((a) => a.correct).text;
+        // Procura o botão com o texto certo (simplificado)
+        buttons.forEach((b) => {
+          if (b.textContent === correctText) b.classList.add("correct");
+        });
+      }
+
+      document.getElementById("next-btn").style.display = "block";
+    }
+
+    document.getElementById("next-btn").onclick = () => {
+      currentQuestionIndex++;
+      if (currentQuestionIndex < currentQuiz.questions.length) {
+        showQuestion();
+      } else {
+        finishQuiz();
+      }
+    };
+
+    // === FINALIZAÇÃO E RESULTADOS ===
+    function finishQuiz() {
+      document.getElementById("game-screen").style.display = "none";
+      document.getElementById("result-screen").style.display = "block";
+      document.getElementById("progress-fill").style.width = "100%";
+
+      const total = currentQuiz.questions.length;
+      const percentage = Math.round((score / total) * 100);
+
+      document.getElementById("final-score").textContent = score;
+      document.getElementById("total-questions").textContent = total;
+
+      // Feedback Texto
+      const feedback = document.getElementById("feedback-msg");
+      if (percentage >= 80)
+        feedback.textContent = "Excelente! Você domina esse assunto.";
+      else if (percentage >= 50)
+        feedback.textContent = "Bom trabalho! Mas ainda pode melhorar.";
+      else
+        feedback.textContent =
+          "Que tal revisar o material didático e tentar novamente?";
+
+      // Salvar no Firebase
+      saveResultToFirebase(percentage);
+
+      // Gerar Gráfico
+      renderChart(score, total - score);
+    }
+
+    function saveResultToFirebase(percentage) {
+      const user = auth.currentUser;
+      const resultData = {
+        score: score,
+        total: currentQuiz.questions.length,
+        percentage: percentage,
+        timestamp: Date.now(),
+        username: user.displayName || user.email,
+      };
+
+      // Salva em um nó separado para o professor consultar depois
+      db.ref(`quiz_results/${quizId}/${user.uid}`).set(resultData);
+    }
+
+    function renderChart(correct, incorrect) {
+      const ctx = document
+        .getElementById("performanceChart")
+        .getContext("2d");
+
+      // Se já existir gráfico, destroi para criar novo (caso de reload SPA)
+      if (myChart) myChart.destroy();
+
+      myChart = new Chart(ctx, {
+        type: "doughnut",
+        data: {
+          labels: ["Acertos", "Erros"],
+          datasets: [
+            {
+              data: [correct, incorrect],
+              backgroundColor: ["#28a745", "#dc3545"],
+              borderWidth: 0,
+            },
+          ],
+        },
+        options: {
+          responsive: true,
+          maintainAspectRatio: false,
+          plugins: {
+            legend: { position: "bottom", labels: { color: "#ccc" } },
+          },
+        },
+      });
+    }
+
+    // === SIDEBAR (Recomendações) ===
+    function loadRecommendations() {
+      db.ref("quizzes")
+        .limitToLast(6)
+        .once("value")
+        .then((snap) => {
+          const list = document.getElementById("recommendations-list");
+          list.innerHTML = "";
+
+          const all = snap.val() || {};
+          Object.entries(all).forEach(([id, q]) => {
+            if (id === quizId) return; // Não recomenda o próprio quiz
+
+            list.innerHTML += `
+                        <a href="executar-quiz.html?id=${id}" class="rec-item">
+                            <div class="rec-icon"><i class="fas fa-question"></i></div>
+                            <div class="rec-info">
+                                <h4>${q.title}</h4>
+                                <span>${q.level}</span>
+                            </div>
+                        </a>
+                    `;
+          });
+        });
+    }
+
+    // === PAINEL DO PROFESSOR ===
+    function loadTeacherPanel() {
+      const panel = document.getElementById("teacher-panel");
+      const list = document.getElementById("students-list");
+      panel.style.display = "block";
+
+      // Lê a pasta quiz_results desse quiz específico
+      db.ref(`quiz_results/${quizId}`).on(
+        "value",
+        (snap) => {
+          const results = snap.val();
+          if (!results) {
+            list.innerHTML = "<p>Nenhum aluno realizou este quiz ainda.</p>";
+            return;
+          }
+
+          let html = "";
+          Object.values(results).forEach((res) => {
+            // Cor da nota
+            const color = res.percentage >= 70 ? "#28a745" : "#dc3545";
+
+            html += `
+                        <div class="student-row">
+                            <span>${res.username}</span>
+                            <div>
+                                <span style="font-size:0.8rem; color:#888; margin-right:10px;">
+                                    ${new Date(
+              res.timestamp
+            ).toLocaleDateString()}
+                                </span>
+                                <span class="score-badge" style="color:${color}">
+                                    ${res.percentage}%
+                                </span>
+                            </div>
+                        </div>
+                    `;
+          });
+          list.innerHTML = html;
+        },
+        (err) => {
+          list.innerHTML =
+            "<p style='color:red'>Erro ao carregar dados. Verifique suas permissões.</p>";
+        }
+      );
+    }
+  </script>
+</body>
+
+</html>
