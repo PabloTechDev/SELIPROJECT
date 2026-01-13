@@ -24,11 +24,11 @@ Abaixo, algumas demonstrações da interface focada em UX e Acessibilidade:
 *Design limpo com alto contraste e navegação simplificada.*
 
 ### Área de Estudo(Aluno)
-![Screenshot da Área de Curso](/didacticcontentprint.png)
+![Screenshot da Área de Curso](/didacticcontentteacheronlyprint.png)
 *Interface focada no conteúdo, sem distrações visuais.*
 
 ### Área de Estudo(Mentor)
-![Screenshot da Área de Curso](/didacticcontentteacheronlyprint.png)
+![Screenshot da Área de Curso](/didacticcontentprint.png)
 *Interface focada em organização e edição livre centrada para os professores/mentores*
 
 ---
