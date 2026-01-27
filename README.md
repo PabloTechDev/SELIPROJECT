@@ -29,7 +29,7 @@ Abaixo, algumas demonstrações da interface focada em UX e Acessibilidade:
 
 ### Área de Estudo(Mentor)
 ![Screenshot da Área de Curso](/didacticcontentprint.png)
-*Interface focada em organização e edição livre centrada para os professores/mentores*
+*Interface focada em organização e edição livre centrada para os professores/mentores.*
 
 ---
 
